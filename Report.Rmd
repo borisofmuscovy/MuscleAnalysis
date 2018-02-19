@@ -1,0 +1,15 @@
+---
+title: "Calorie Burning Report"
+output: html_notebook
+---
+
+Our [R Markdown](http://rmarkdown.rstudio.com) Notebook which will form the final report. When you execute code within the notebook, the results appear beneath the code. 
+
+You can run code here and insert results directly.
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
