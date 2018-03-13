@@ -1,30 +1,7 @@
-#install.packages("nlme") if you don't have it already
-<<<<<<< HEAD
-require(nlme)
-require(effects)
 
-=======
-install.packages("nlme")
-install.packages("pastecs")
-install.packages("effects")
->>>>>>> 984d97793cdd959eebc85b73a468b06caf54f674
-library(nlme)
-library(lme4)
-library(effects)
-library(lattice)
+requirements = c("nlme", "effects", "pastecs", "lattice", "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4")
+lapply(requirements, require, character.only=T)
 
-library(pastecs)
-library(psych)
-library(ggplot2)
-library(GGally)
-install.packages("mice")
-library(mice)
-install.packages("VIM")
-library(VIM)
-install.packages("aod")
-library(aod)
-install.packages("BaM")
-library(BaM)
 muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
 muscleSum = summary(muscledata)
 muscleSum
