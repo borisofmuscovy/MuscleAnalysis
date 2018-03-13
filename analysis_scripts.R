@@ -1,23 +1,7 @@
-#install.packages("nlme") if you don't have it already
-install.packages("nlme")
-install.packages("pastecs")
-install.packages("effects")
-library(nlme)
-library(lme4)
-library(effects)
-library(lattice)
-library(pastecs)
-library(psych)
-library(ggplot2)
-library(GGally)
-install.packages("mice")
-library(mice)
-install.packages("VIM")
-library(VIM)
-install.packages("aod")
-library(aod)
-install.packages("BaM")
-library(BaM)
+
+requirements = c("nlme", "effects", "pastecs", "lattice", "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4")
+lapply(requirements, require, character.only=T)
+
 muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
 muscleSum = summary(muscledata)
 muscleSum
@@ -33,11 +17,14 @@ muscledata_missing_aggr
 
 #creating column to assign ID's to the different individuals (same weight = same individual).
 #having multiple rows belonging to 1 individual generally signals we should use ID as a random factor, see lesson 3/4.
+ID = c(rep(1,3),rep(2,4),rep(3,4),rep(4,2),rep(5,3),rep(6,5),rep(7,3))
+muscledata = cbind(ID, muscledata)
 #ID = c(rep(1,3),rep(2,4),rep(3,4),rep(4,2),rep(5,3),rep(6,5),rep(7,3))
 #muscledata = cbind(ID, muscledata)
 
 #we have a lesson on missing data so I'm guessing this will be more complex than just leaving it out.
 #doing this so we can do some preliminary work.
+muscledata = na.omit(muscledata)
 muscledata_edit = na.omit(muscledata)
 
 ID = c(rep(1,3),rep(2,4),rep(3,4),rep(4,2),rep(5,3),rep(6,5),rep(7,3))
@@ -157,6 +144,7 @@ corr.calhour.calories_group6.test
 #by setting ID as a random factor, we're basicly telling the model to
 #   1. pool all observations belonging to the same ID (since there might be additional correlation going on between those values)
 #   2. assume that the 7 IDs observed here are just a subset of a larger population (-> the population of all humans)
+xyplot(calories ~ calhour,data=muscledata,group=ID,type="o")
 xyplot(calories~calhour,data=muscledata, groups = weight, type="o")
 lme = lme(calories ~ calhour + weight, random=~1|ID, correlation=corCompSymm(form=~1|ID), data=muscledata)
 anova(lme)
