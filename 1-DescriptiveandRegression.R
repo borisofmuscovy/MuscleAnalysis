@@ -91,6 +91,30 @@ corr.calhour.calories.test
 muscledata.lm = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
 muscledata.lm.summary = summary(muscledata.lm)
 muscledata.lm.summary
+
+##handling missing data with IPW
+muscledata$r<-as.numeric(!is.na(muscledata$calories))
+head(muscledata)
+muscledata.ipw.glm<-glm(r ~ weight+calhour+weight*calhour, data=muscledata,family=binomial)
+summary(muscledata.ipw.glm)
+muscledata$w<-1/fitted(muscledata.ipw.glm)
+head(muscledata)
+muscledata.results.ipw<- glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
+summary(muscledata.results.ipw)
+
+
+#handling missing data with MI
+muscledata.imp <- mice(muscledata, meth = c("", "", "pmm"), m=100)
+muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+MI.matrix<-matrix(0,100,4)
+for(k in 1:100){ MI.matrix[k,]<-coefficients(muscledata.fit$analyses[[k]])}
+MI.results=data.frame(Intercept=MI.matrix[,1], weight=MI.matrix[,2],calhour=MI.matrix[,3], interaction=MI.matrix[,4])
+MI.results[1:10,]
+muscledata.est <- pool(muscledata.fit)
+summary(muscledata.est)
+
+
+
 ## Likelihood ratio test null model versus full model
 muscledata.lm.int = lm(calories~1, data=muscledata_edit) 
 anova(muscledata.lm.int,muscledata.lm)
