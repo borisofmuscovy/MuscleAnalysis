@@ -3,7 +3,7 @@ title: "Calorie Burning Report"
 output: pdf_document
 ---
 
-Our [R Markdown](http://rmarkdown.rstudio.com) Notebook which will form the final report. When you execute code within the notebook, the results appear beneath the code. 
+Our [R Markdown](http://rmarkdown.rstudio.com) Notebook which will form the final report. When you execute code within the notebook, the results appear beneath the code.
 
 You can run code here and insert results directly.
 
@@ -16,10 +16,12 @@ Here are some descriptive statistics.
 ```{r}
 plot(muscledata)
 ```
+
 Let's check correlation between the weight of an individual and the intensity of their workout, as defined by the calories burnt per hour, using the Pearson correlation coefficient:
 ```{r}
 cor.test(muscledata$weight, muscledata$calhour, alternative="two.sided", method="pearson")
 ```
+
 The P value is way, way more than 0.05. We accept the null hypothesis, there seems to be no significant correlation.
 
 Let's try plotting a simple linear model to this relationship.
@@ -27,4 +29,5 @@ Let's try plotting a simple linear model to this relationship.
 weightCalhr = lm(weight~calhour, data=muscledata)
 summary(weightCalhr)
 ```
+
 The linear model confirms our suspicion that there is no relationship here.

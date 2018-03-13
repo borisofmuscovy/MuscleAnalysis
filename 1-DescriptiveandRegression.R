@@ -1,4 +1,7 @@
 #install.packages("nlme") if you don't have it already
+require(nlme)
+require(effects)
+
 library(nlme)
 library(lme4)
 library(effects)
