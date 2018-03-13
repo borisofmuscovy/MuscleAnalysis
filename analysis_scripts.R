@@ -24,7 +24,6 @@ muscledata = cbind(ID, muscledata)
 
 #we have a lesson on missing data so I'm guessing this will be more complex than just leaving it out.
 #doing this so we can do some preliminary work.
-muscledata = na.omit(muscledata)
 muscledata_edit = na.omit(muscledata)
 
 ID = c(rep(1,3),rep(2,4),rep(3,4),rep(4,2),rep(5,3),rep(6,5),rep(7,3))
