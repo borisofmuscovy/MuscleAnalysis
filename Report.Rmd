@@ -126,6 +126,9 @@ plot(allEffects(muscledata.results.ipw))
 
 # Discussion
 
+And in my opnion, Bayesian would make sense. MI is better in here. You cannot give weights to lost data. 
+
 # Conclusion
 
+The missing data is correlated with the calhour - intensity of the exercise - hence there is something wrong with the experimental design. Such as the way they measured heat production, so they could not accurately measure calorie burning. While we have no data for low calhour values, attributing weights to the values we have is not workable for the 13 calhour data point. That being said, the MI approach provides a more robust estimates for missing data.
 
