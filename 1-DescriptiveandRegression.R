@@ -78,7 +78,7 @@ legend(45, 345, legend=c("Observed Data", "Missing Data"),
 
 ##fitting the model
 #Using stepwise with AIC to select the best model
-muscledata.stepwise <- step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
+muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 
 #calories = β0 + β1*weight + β2*calhour + β3*(weight*calhour) = 0
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
@@ -86,36 +86,51 @@ muscledata.complete.case.summary = summary(muscledata.complete.case)
 plot(allEffects(muscledata.complete.case))
 muscledata.complete.case.summary
 
-#handling missing data with MI
-muscledata.imp <- mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
-muscledata.est <- pool(muscledata.fit)
-summary(muscledata.est)
+#handling missing data with MI(PMM)
+muscledata.imp = mice(muscledata, meth = c("", "", "pmm"), m=100)
+muscledata.fit = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.pmm = pool(muscledata.fit)
+summary(muscledata.pmm)
 
 MI.fitted.values = complete(muscledata.imp, "long", inc=T)
-muscledata.results.MIALL <- glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
+muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
 dlist=list(calhour=seq(20,60,10))
-plot(allEffects(muscledata.results.MIALL,xlevels=dlist)[1])
+plot(allEffects(muscledata.results.mi.pmm,xlevels=dlist)[1], main="PMM effects plot")
 
-col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
+col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
+
+#handling missing data with MI(norm)
+muscledata.imp = mice(muscledata, meth = c("", "", "norm"), m=100)
+muscledata.fit = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.norm = pool(muscledata.fit)
+summary(muscledata.norm)
+
+MI.fitted.values = complete(muscledata.imp, "long", inc=T)
+muscledata.results.MIALL = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
+dlist=list(calhour=seq(20,60,10))
+plot(allEffects(muscledata.results.MIALL,xlevels=dlist)[1], main="NORM effects plot")
+
+col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
 
 ##handling missing data with IPW
-muscledata$r<-as.numeric(!is.na(muscledata$calories))
-head(muscledata)
-muscledata.ipw.glm<-glm(r ~ weight+calhour+weight*calhour, data=muscledata,family=binomial)
+muscledata$r = as.numeric(!is.na(muscledata$calories))
+muscledata.ipw.glm = glm(r ~ weight+calhour+weight*calhour, data=muscledata, family=binomial)
 summary(muscledata.ipw.glm)
-muscledata$w<-1/fitted(muscledata.ipw.glm)
-head(muscledata)
-muscledata.results.ipw<- glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
-plot(allEffects(muscledata.results.ipw))
+muscledata$w = 1/fitted(muscledata.ipw.glm)
+muscledata.results.ipw= glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
+plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
+summary(muscledata.results.ipw)
+
+## Likelihood ratio test null model versus full model
+anova(muscledata.complete.case, muscledata.pmm, muscledata.norm, muscledata.results.ipw)
+summary(muscledata.complete.case)
+summary(muscledata.pmm)
+summary(muscledata.norm)
 summary(muscledata.results.ipw)
 
 
-## Likelihood ratio test null model versus full model
-muscledata.complete.case.int = lm(calories~1, data=muscledata_edit) 
-anova(muscledata.complete.case.int,muscledata.complete.case)
-#H0 :β1 =β2 =β3 =0
 ## Sequential building of the model
 muscledata.anova = anova(muscledata.complete.case)
 muscledata.anova
