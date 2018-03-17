@@ -91,7 +91,6 @@ muscledata.imp = mice(muscledata, meth = c("", "", "pmm"), m=100)
 muscledata.fit = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.pmm = pool(muscledata.fit)
 summary(muscledata.pmm)
-
 MI.fitted.values = complete(muscledata.imp, "long", inc=T)
 muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
 dlist=list(calhour=seq(20,60,10))
