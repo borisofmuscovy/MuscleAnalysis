@@ -72,6 +72,7 @@ aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing da
 aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
 barMiss(muscledata[,c("calories","weight")])
 histMiss(muscledata)
+histMiss(muscledata, pos=2)
 ```
 
 
