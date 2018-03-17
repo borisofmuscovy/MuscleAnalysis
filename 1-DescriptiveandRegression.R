@@ -87,8 +87,8 @@ plot(allEffects(muscledata.complete.case))
 muscledata.complete.case.summary
 
 #handling missing data with MI(PMM)
-muscledata.imp = mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
+muscledata.fit.pmm = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.pmm = pool(muscledata.fit)
 summary(muscledata.pmm)
 MI.fitted.values = complete(muscledata.imp, "long", inc=T)
@@ -100,8 +100,8 @@ col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],
 stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
 
 #handling missing data with MI(norm)
-muscledata.imp = mice(muscledata, meth = c("", "", "norm"), m=100)
-muscledata.fit = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100)
+muscledata.fit.norm = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.norm = pool(muscledata.fit)
 summary(muscledata.norm)
 
@@ -115,7 +115,7 @@ stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=
 
 ##handling missing data with IPW
 muscledata$r = as.numeric(!is.na(muscledata$calories))
-muscledata.ipw.glm = glm(r ~ weight+calhour+weight*calhour, data=muscledata, family=binomial)
+muscledata.ipw.glm = glm(r ~ calhour, data=muscledata, family=binomial)
 summary(muscledata.ipw.glm)
 muscledata$w = 1/fitted(muscledata.ipw.glm)
 muscledata.results.ipw= glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
@@ -123,21 +123,6 @@ plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
 summary(muscledata.results.ipw)
 
 ## Likelihood ratio test null model versus full model
-anova(muscledata.complete.case, muscledata.pmm, muscledata.norm, muscledata.results.ipw)
-summary(muscledata.complete.case)
-summary(muscledata.pmm)
-summary(muscledata.norm)
-summary(muscledata.results.ipw)
-
-
-## Sequential building of the model
-muscledata.anova = anova(muscledata.complete.case)
-muscledata.anova
-muscledata.complete.case2 = lm(calories~calhour+weight+weight*calhour, data=muscledata_edit)
-muscledata.anova2 = anova(muscledata.complete.case2)
-muscledata.anova2
-muscledata.complete.case.final = lm(calories~calhour+weight+weight*calhour, data=muscledata_edit)
-muscledata.final.summary = summary(muscledata.complete.case.final)
-muscledata.final.summary
-#(calories)i = -330.884 + 11.787*(calhour)i + 7.728*(weight)i - 0.132*(calhour*weight)i + εi
-
+AIC(muscledata.complete.case)
+AIC(muscledata.results.ipw)
+anova(muscledata.fit.norm, muscledata.fit.pmm)
