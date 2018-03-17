@@ -115,10 +115,10 @@ stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=
 
 ##handling missing data with IPW
 muscledata$r = as.numeric(!is.na(muscledata$calories))
-muscledata.ipw.glm = glm(r ~ calhour, data=muscledata, family=binomial)
+muscledata.ipw.glm = lm(r ~ calhour, data=muscledata, family=binomial)
 summary(muscledata.ipw.glm)
 muscledata$w = 1/fitted(muscledata.ipw.glm)
-muscledata.results.ipw= glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
+muscledata.results.ipw= lm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
 plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
 summary(muscledata.results.ipw)
 
@@ -126,3 +126,19 @@ summary(muscledata.results.ipw)
 AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
 anova(muscledata.fit.norm, muscledata.fit.pmm)
+
+calories <- c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
+method <- rep(c("pmm", "norm"), each = nrow(muscledata))
+calm <- data.frame(muscledata = calories, method = method)
+histogram( ~calories | method, data = calm, nint = 25)
+
+muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
+muscledata.fit.pmm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
+
+muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100)
+muscledata.fit.norm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
+pool.r.squared(muscledata.fit.norm)
+pool.r.squared(muscledata.fit.pmm)
+summary(muscledata.results.ipw)         
+summary(muscledata.complete.case)   
+
