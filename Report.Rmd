@@ -42,22 +42,22 @@ The linear model confirms our suspicion that there is no relationship here.
 Let's try another one:
 ```{r}
 muscledata_edit = na.omit(muscledata)
-muscledata.lm = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
-muscledata.lm.summary = summary(muscledata.lm)
-muscledata.lm.summary
-plot(allEffects(muscledata.lm))
+muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
+muscledata.complete.case.summary = summary(muscledata.complete.case)
+muscledata.complete.case.summary
+plot(allEffects(muscledata.complete.case))
 ```
 
 ```{r}
-plot(allEffects(muscledata.lm))
+plot(allEffects(muscledata.complete.case))
 ```
 
 There seems to be a relationship between calhour and missing data. Clearly, there is a Missing at Random (MAR) mechanism involved - P(Missing) depends only on the observed values of calhour.
 
 ```{r}
-muscledata.lm.2 = lm(calories~calhour+weight+calhour*weight, data=muscledata_edit)
-summary(muscledata.lm.2)
-plot(allEffects(muscledata.lm.2))
+muscledata.complete.case.2 = lm(calories~calhour+weight+calhour*weight, data=muscledata_edit)
+summary(muscledata.complete.case.2)
+plot(allEffects(muscledata.complete.case.2))
 ```
 
 
@@ -72,6 +72,7 @@ aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing da
 aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
 barMiss(muscledata[,c("calories","weight")])
 histMiss(muscledata)
+histMiss(muscledata, pos=2)
 ```
 
 
@@ -94,16 +95,17 @@ summary(muscledata.est)
 ```
 
 ```{r}
-values = complete(muscledata.imp, "long", inc=T)
-muscledata.results.MIALL <- glm(calories~weight+calhour+weight*calhour, data=values)
-plot(allEffects(muscledata.results.MIALL))
+MI.fitted.values = complete(muscledata.imp, "long", inc=T)
+muscledata.results.MIALL <- glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
+dlist=list(calhour=seq(20,60,10))
+plot(allEffects(muscledata.results.MIALL,xlevels=dlist)[1])
 ```
 
 Clearly something cool happened here.
 
 ```{r}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
-stripplot(calories~.imp, data=values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
+stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
 ```
 
 ## IPW analysis
