@@ -116,7 +116,7 @@ stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=
 
 ##handling missing data with IPW
 muscledata$r = as.numeric(!is.na(muscledata$calories))
-muscledata.ipw.glm = glm(r ~ weight+calhour+weight*calhour, data=muscledata, family=binomial)
+muscledata.ipw.glm = glm(r ~ calhour, data=muscledata, family=binomial)
 summary(muscledata.ipw.glm)
 muscledata$w = 1/fitted(muscledata.ipw.glm)
 muscledata.results.ipw= glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
@@ -124,24 +124,6 @@ plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
 summary(muscledata.results.ipw)
 
 ## Likelihood ratio test null model versus full model
-anova(muscledata.complete.case, muscledata.pmm, muscledata.norm, muscledata.results.ipw)
 AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
-pool.compare(muscledata.fit.norm, muscledata.fit.pmm)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+anova(muscledata.fit.norm, muscledata.fit.pmm)
