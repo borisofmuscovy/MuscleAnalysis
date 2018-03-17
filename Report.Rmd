@@ -82,15 +82,9 @@ histMiss(muscledata, pos=2)
 ## Multiple imputation analysis
 
 ```{r}
-invisible(capture.output(muscledata.imp <- mice(muscledata, meth = c("", "", "norm"), m=100)))
-invisible(muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour)))
-MI.matrix<-matrix(0,100,4)
-for(k in 1:100){ 
-  invisible(MI.matrix[k,]<-coefficients(muscledata.fit$analyses[[k]]))
-  }
-MI.results=data.frame(Intercept=MI.matrix[,1], weight=MI.matrix[,2],calhour=MI.matrix[,3], interaction=MI.matrix[,4])
-head(MI.results[1:10,])
-muscledata.est <- pool(muscledata.fit)
+invisible(capture.output(muscledata.imp <- mice(muscledata, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
+invisible(muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))) # analysis, creating a Q for each imputed dataset
+muscledata.est <- pool(muscledata.fit) # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
 summary(muscledata.est)
 ```
 
