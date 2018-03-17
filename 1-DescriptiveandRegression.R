@@ -1,4 +1,4 @@
-#install.packages("nlme") if you don't have it already
+#Used Packages
 library(nlme)
 library(lme4)
 library(effects)
@@ -11,71 +11,76 @@ library(mice)
 library(VIM)
 library(aod)
 library(BaM)
+
+#Importing of the data
 muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
-muscleSum = summary(muscledata)
+
+#Explore the data + Descriptive Statistics
+muscledata.summary = summary(muscledata)
+muscledata.summary
 plot(muscledata)
-muscleSum
-##From the brief-intro pdf, the data are collected from 24 volunteers.
-#1. examine them individually
-#2. group them by weight and examine
-
-#missing data
-muscledata_missing_aggr = aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"))
-muscledata_missing_aggr
-
-aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
-barMiss(muscledata[,c("calories","weight")])
-histMiss(muscledata)
-histMiss(muscledata, pos=2)
-
-marginplot(muscledata[c("calhour","calories")])
-marginplot(muscledata[c("weight","calories")])
-
-#creating column to assign ID's to the different individuals (same weight = same individual).
-#having multiple rows belonging to 1 individual generally signals we should use ID as a random factor, see lesson 3/4.
-#ID = c(rep(1,3),rep(2,4),rep(3,4),rep(4,2),rep(5,3),rep(6,5),rep(7,3))
-#muscledata = cbind(ID, muscledata)
-
-#we have a lesson on missing data so I'm guessing this will be more complex than just leaving it out.
-#doing this so we can do some preliminary work.
 muscledata_edit = na.omit(muscledata)
 calories = muscledata_edit$calories
 calhour = muscledata_edit$calhour
 weight = muscledata_edit$weight
-## Descriptive Statistics
-#for all individuals
+
+#For All Individuals
 descrip.muscledata = stat.desc(muscledata_edit[,c("weight","calhour","calories")],basic = TRUE, desc = TRUE)
 options(digits = 2)
 descrip.muscledata
 par(mfrow=c(1,3))
-boxplot(weight, main='weight', col=2)
-boxplot(calhour, main='calhour', col=3)
-boxplot(calories, main='calories', col=4)
+boxplot(weight, main='weight', col="pink")
+boxplot(calhour, main='calhour', col="magenta")
+boxplot(calories, main='calories', col="purple")
 boxplot(calories~calhour, xlab="Calhour",ylab="Calories")
 ggpairs(muscledata_edit)
 
-#group them by weight
-describeBy(muscledata_edit[c("calhour","calories")], group = weight)
-
-
-#estimate correlation(individuals)
+#estimate correlation (individuals)
 #scatterplot
 par(mfrow=c(1,1))
 plot(calories~calhour,  main='Calhour vs Calories')
 abline(lm(calories~calhour), col=2)
-ggplot(muscledata_edit, aes(x=calhour, y=calories))+ geom_point(colour="blue") + geom_smooth(colour="black", method="lm")
+ggplot(muscledata_edit, aes(x=calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
 
 #calculating the covariance and correlation
-cov.calhour.calories = cov(calhour, calories)
 corr.calhour.calories = cor(calhour, calories)
-cov.calhour.calories
 corr.calhour.calories
+
 #test the population correlation H0:correlation=0; H1:correlation!=0; 95%CI
 corr.calhour.calories.test = cor.test(calhour, calories, alternative = "two.sided", method = "pearson")
 corr.calhour.calories.test
-#result: p-value = 2e-08 reject H0. correlation existed!!!
-#fitting the model
-#calories = β0 + β1*weight + β2*calhour + β3*(weight*calhour) =0
+corr.weight.calories.test = cor.test(weight, calories, alternative = "two.sided", method = "pearson")
+corr.weight.calories.test
+
+#Explore the missing data + descriptive statistics
+muscledata_missing_aggr = aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
+muscledata_missing_aggr
+
+aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE, col= c("pink", "purple"))
+#These two histograms show us that the missing calories bellong to the low calhour
+#values but for weights the missing data is distributed evenly accross the spectra.
+#This suggests MAR!!!!
+histMiss(muscledata, col= c("pink", "purple"))
+legend(40,8, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+histMiss(muscledata, pos=2, col= c("pink", "purple"))
+legend(52,8, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+marginplot(muscledata[c("calhour","calories")], col= c("pink", "purple"))
+legend(12, 345, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+marginplot(muscledata[c("weight","calories")], col= c("pink", "purple"))
+legend(45, 345, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+##fitting the model
+#Using stepwise with AIC to select the best model
+muscledata.stepwise <- step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
+
+#calories = β0 + β1*weight + β2*calhour + β3*(weight*calhour) = 0
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
 muscledata.complete.case.summary = summary(muscledata.complete.case)
 plot(allEffects(muscledata.complete.case))
@@ -84,10 +89,6 @@ muscledata.complete.case.summary
 #handling missing data with MI
 muscledata.imp <- mice(muscledata, meth = c("", "", "pmm"), m=100)
 muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
-MI.matrix<-matrix(0,100,4)
-for(k in 1:100){ MI.matrix[k,]<-coefficients(muscledata.fit$analyses[[k]])}
-MI.results=data.frame(Intercept=MI.matrix[,1], weight=MI.matrix[,2],calhour=MI.matrix[,3], interaction=MI.matrix[,4])
-MI.results[1:10,]
 muscledata.est <- pool(muscledata.fit)
 summary(muscledata.est)
 
