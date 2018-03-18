@@ -31,7 +31,7 @@ Let's check correlation between the weight of an individual and the intensity of
 cor.test(muscledata$weight, muscledata$calhour, alternative="two.sided", method="pearson")
 ```
 
-The P value is way, way more than 0.05. We accept the null hypothesis, there seems to be no significant correlation.
+The P value is way, way more than 0.05. We accept the null hypothesis, there seems to be no significant correlation. The intesities of workout seem to be randomly distributed among people of different weights, which is optimal to draw conclusions concerning heat production.
 
 Let's try plotting a simple linear model to this relationship.
 ```{r}
@@ -40,7 +40,7 @@ summary(weightCalhr)
 ```
 The linear model confirms our suspicion that there is no relationship here.
 
-Let's try another one:
+Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
 ```{r}
 muscledata_edit = na.omit(muscledata)
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
@@ -48,6 +48,10 @@ muscledata.complete.case.summary = summary(muscledata.complete.case)
 muscledata.complete.case.summary
 plot(allEffects(muscledata.complete.case))
 ```
+
+Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method reults in a different interpretation).
+
+
 
 ```{r}
 plot(allEffects(muscledata.complete.case))
@@ -102,6 +106,15 @@ Clearly something cool happened here.
 ```{r}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
+```
+
+```{r}
+muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
+muscledata.without13 = muscledata[!muscledata$calhour == 13,]
+invisible(capture.output(muscledata.without13.imp <- mice(muscledata.without13, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
+invisible(muscledata.without13.fit <- with(data=muscledata.without13.imp, exp=glm(calories~weight+calhour+weight*calhour))) # analysis, creating a Q for each imputed dataset
+muscledata.without13.est <- pool(muscledata.without13.fit) # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+summary(muscledata.without13.est)
 ```
 
 ## IPW analysis

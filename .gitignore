@@ -2,5 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
 .Rplots.pdf
 .Report.pdf
+=======
+Rplots.pdf
+>>>>>>> d0a3b8957f43b610156fce814e19e955d7b67efc
