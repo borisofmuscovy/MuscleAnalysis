@@ -1,6 +1,6 @@
 ---
 title: "Calorie Burning Report"
-output: pdf_document
+output: bookdown::pdf_document2
 bibliography: ./bibliography.bib
 ---
 
@@ -12,7 +12,7 @@ This project aimed to examine data originally gathered by @macdonald1914mechanic
 
 ```{r include=FALSE, cache=FALSE}
 requirements = c("nlme", "effects", "pastecs", "lattice", 
-                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw")
+                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw", "gridExtra")
 lapply(requirements, require, character.only = T)
 ```
 
@@ -32,13 +32,13 @@ summary(muscledata)
 
 Here are some descriptive statistics.
 
-```{r echo=FALSE}
+```{r fig1, echo=FALSE, fig.cap="\\label{fig:muscleplots}Summary plots for the dataset."}
 plot(muscledata)
 ```
 
 Some exploratory statistics for all individuals:
 
-```{r echo = FALSE}
+```{r fig2, echo = FALSE, fig.cap="\\label{fig:muscledataboxplots}Boxplots"}
 muscledata_edit = na.omit(muscledata)
 attach(muscledata)
 par(mfrow=c(1,3))
@@ -55,10 +55,21 @@ ggpairs(muscledata_edit)
 
 Here we see that there is a strong positive correlation between calhour and calories (0.95). Whereas, a slightly positive correlation between weight and calories (0.11). 
 
+<<<<<<< HEAD
 Scatterplot wiht interaction and calories:
 
 ```{r echo = FALSE}
 ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("Interaction vs. calories")
+=======
+```{r echo = FALSE}
+ggplot(muscledata_edit, aes(x=calhour, y=calories)) + geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("calhour vs. calories")
+```
+
+Calculating the correlation if we exclude missing data:
+
+```{r echo = FALSE}
+cor(muscledata_edit$calhour, muscledata_edit$calories)
+>>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
 ```
 
 Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
@@ -67,7 +78,25 @@ Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;
 cor.test(muscledata_edit$calhour, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
 ```
 
+<<<<<<< HEAD
 This saying that there is no direct relation between weights and calories.
+=======
+
+
+
+Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
+```{r echo = FALSE}
+muscledata_edit = na.omit(muscledata)
+muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
+muscledata.complete.case.summary = summary(muscledata.complete.case)
+muscledata.complete.case.summary
+plot(allEffects(muscledata.complete.case))
+```
+
+Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method results in a different interpretation).
+
+
+>>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
 
 ```{r echo = FALSE}
 cor.test(muscledata_edit$weight, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
@@ -81,12 +110,15 @@ All missing is in calories.
 
 ```{r echo = FALSE}
 aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
+<<<<<<< HEAD
 ```
 In second and third we see that the missing data is distributed among weights but it is biased in calhour. The missing data  is present in the lower values of calhour. We assume that this might be because of the machine that is not efficiently working with such small heat produced by the participants.This suggests MAR as a plausible missingness mechanism. Boris explain what is MAR to the client. 
 
 ```{r echo = FALSE}
 par(mfrow=c(1,1))
 aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
+=======
+>>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
 
 histMiss(muscledata, col= c("pink", "purple"))
 legend(40,8, legend=c("Observed Data", "Missing Data"),
@@ -148,10 +180,14 @@ Put in a short desc of multiple imputaton here
 
 First we use the PMM method:
 
+```{r echo = FALSE, include=FALSE, cache=FALSE}
+muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100) # imputation of different values, 100 different complete datasets
+muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))  # analysis, creating a Q for each imputed dataset
+muscledata.pmm = pool(muscledata.fit.pmm)  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+summary(muscledata.pmm)
+```
+
 ```{r echo = FALSE}
-invisible(capture.output(muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100))) # imputation of different values, 100 different complete datasets
-invisible(capture.output(muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))))  # analysis, creating a Q for each imputed dataset
-invisible(capture.output(muscledata.pmm = pool(muscledata.fit.pmm)))  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
 summary(muscledata.pmm)
 ```
 
@@ -174,10 +210,13 @@ ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colo
 ```
 What if we use the Bayesian norm method?
 
+```{r echo = FALSE, include=FALSE, cache=FALSE}
+muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100) # imputation of different values, 100 different complete datasets
+muscledata.fit.norm = with(data=muscledata.imp.norm, exp=glm(calories~weight+calhour+weight*calhour))  # analysis, creating a Q for each imputed dataset
+muscledata.norm = pool(muscledata.fit.norm)  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+```
+
 ```{r echo = FALSE}
-invisible(capture.output(muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
-invisible(capture.output(muscledata.fit.norm = with(data=muscledata.imp.norm, exp=glm(calories~weight+calhour+weight*calhour))))  # analysis, creating a Q for each imputed dataset
-invisible(capture.output(muscledata.norm = pool(muscledata.fit.norm)))  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
 summary(muscledata.norm)
 ```
 
@@ -232,6 +271,7 @@ AIC(muscledata.results.ipw)
 
 # Discussion
 
+<<<<<<< HEAD
 Due to the NA values, we conducted a full model analysis with a complete case and three NA comparsions (you can write this better) models. Beacuse the NA values are not evenly distrubited among calhour, we decided to try different approaches for NA handling.
 
 pmm generates the data accordıng to the pattern ın the observed ones. ın our cases, the data ıs dıscreted by the body weıght, so pmm generated the data dıscreted as well. ın norm method, the data ıs generated based on normal dıstrıbutıon.
@@ -265,6 +305,20 @@ stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col,
 
 
 Because there are no calorie values for calhour 13, there are no data to atributte weights to. So, IPW will make a difference only for calhour 19. This gives us a slightly better model with IPW than complete case. 
+=======
+```{r FigCompare, echo = FALSE, fig.width=10}
+
+CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands")
+NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
+PMMplot = plot(allEffects(muscledata.results.mi.pmm, xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
+IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style = "bands")
+class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
+grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
+```
+
+
+And in my opnion, Bayesian would make sense. MI is better in here. You cannot give weights to lost data. 
+>>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
 
 # Conclusion
 plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[1], main="NORM effects plot")
