@@ -169,7 +169,7 @@ muscledata.pmm = pool(muscledata.fit.pmm)  # pooling the Qs together to create o
 summary(muscledata.pmm)
 ```
 
-```{r}
+```{r echo = FALSE}
 summary(muscledata.pmm)
 ```
 
