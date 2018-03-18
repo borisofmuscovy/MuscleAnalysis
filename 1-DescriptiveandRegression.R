@@ -88,9 +88,10 @@ muscledata.complete.case.summary
 
 #handling missing data with MI(PMM)
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit.pmm = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.pmm = pool(muscledata.fit.pmm)
 summary(muscledata.pmm)
+
 MI.fitted.values.pmm = complete(muscledata.imp.pmm, "long", inc=T)
 muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.pmm)
 dlist=list(calhour=seq(20,60,10))
@@ -125,7 +126,6 @@ summary(muscledata.results.ipw)
 ## Likelihood ratio test null model versus full model
 AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
-anova(muscledata.fit.norm, muscledata.fit.pmm)
 
 calories <- c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
 method <- rep(c("pmm", "norm"), each = nrow(muscledata))
@@ -139,6 +139,6 @@ muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100)
 muscledata.fit.norm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
 pool.r.squared(muscledata.fit.norm)
 pool.r.squared(muscledata.fit.pmm)
-summary(muscledata.results.ipw)         
-summary(muscledata.complete.case)   
+summary(muscledata.results.ipw)       
+summary(muscledata.complete.case)
 
