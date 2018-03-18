@@ -84,9 +84,10 @@ muscledata.complete.case.summary
 
 #handling missing data with MI(PMM)
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit.pmm = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.pmm = pool(muscledata.fit.pmm)
 summary(muscledata.pmm)
+
 MI.fitted.values.pmm = complete(muscledata.imp.pmm, "long", inc=T)
 muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.pmm)
 dlist=list(calhour=seq(20,60,10))
@@ -121,11 +122,11 @@ summary(muscledata.results.ipw)
 ## Likelihood ratio test null model versus full model
 AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
-anova(muscledata.fit.norm, muscledata.fit.pmm)
 
 calories = c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
 method = rep(c("pmm", "norm"), each = nrow(muscledata))
 calm = data.frame(muscledata = calories, method = method)
+<<<<<<< HEAD
 histogram( ~calories | method, data = calm, nint = 25)
 
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
@@ -154,3 +155,6 @@ plot(allEffects(MI.fitted.values.pmm.excl.13,xlevels=dlist)[1], main="PMM effect
 
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
+=======
+histogram( ~calories | method, data = calm, nint = 24)
+>>>>>>> 2ed57736b5edca759e785728129221093be24679
