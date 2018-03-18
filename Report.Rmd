@@ -12,7 +12,7 @@ This project aimed to examine data originally gathered by @macdonald1914mechanic
 
 ```{r include=FALSE, cache=FALSE}
 requirements = c("nlme", "effects", "pastecs", "lattice", 
-                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw")
+                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw", "gridExtra")
 lapply(requirements, require, character.only = T)
 ```
 
@@ -238,6 +238,17 @@ AIC(muscledata.results.ipw)
 
 
 # Discussion
+
+```{r FigCompare, echo = FALSE, fig.width=10}
+
+CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands")
+NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
+PMMplot = plot(allEffects(muscledata.results.mi.pmm, xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
+IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style = "bands")
+class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
+grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
+```
+
 
 And in my opnion, Bayesian would make sense. MI is better in here. You cannot give weights to lost data. 
 
