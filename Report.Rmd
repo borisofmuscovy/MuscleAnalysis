@@ -1,6 +1,10 @@
 ---
-title: "Calorie Burning Report"
-output: bookdown::pdf_document2
+title: "Calorie Consumption During Bicycle Work: A Statistical Analysis of an Incomplete Dataset"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: Nuno Chicoria, Boris Shilov, Murat cem Kose, Yibing Liu, Robin Vermote
+output: 
+  bookdown::pdf_document2:
+    number_sections: true
 bibliography: ./bibliography.bib
 ---
 
