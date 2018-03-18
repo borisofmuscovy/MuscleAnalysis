@@ -290,7 +290,7 @@ stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col,
 
 Because there are no calorie values for calhour 13, there are no data to atributte weights to. So, IPW will make a difference only for calhour 19. This gives us a slightly better model with IPW than complete case. 
 
-```{r FigCompare, echo = FALSE, fig.width=10}
+```{r FigCompare, echo = FALSE, fig.width=10, fig.height=10}
 
 CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands")
 NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
