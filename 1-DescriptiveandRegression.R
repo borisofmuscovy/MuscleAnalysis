@@ -33,10 +33,9 @@ ggpairs(muscledata_edit)
 par(mfrow=c(1,1))
 plot(calories~calhour,  main='Calhour vs Calories')
 abline(lm(calories~calhour), col=2)
-ggplot(muscledata_edit, aes(x=calhour, y=calories))
-+ geom_point(colour="red") 
-+ geom_smooth(colour="orange", method="lm") 
-+ ggtitle("calhour vs. calories")
+ggplot(muscledata_edit, aes(x=calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(muscledata_edit, aes(x=weight, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
 
 #calculating the covariance and correlation
 corr.calhour.calories = cor(calhour, calories)
@@ -126,8 +125,18 @@ AIC(muscledata.results.ipw)
 calories = c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
 method = rep(c("pmm", "norm"), each = nrow(muscledata))
 calm = data.frame(muscledata = calories, method = method)
-histogram( ~calories | method, data = calm, nint = 25)
+histogram( ~calories | method, data = calm, nint = 24)
 
+<<<<<<< HEAD
+summary(muscledata.results.ipw)       
+summary(muscledata.complete.case)
+summary(muscledata.pmm)    
+summary(muscledata.norm)
+
+ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+=======
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
 muscledata.fit.pmm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
 
@@ -155,3 +164,4 @@ plot(allEffects(MI.fitted.values.pmm.excl.13,xlevels=dlist)[1], main="PMM effect
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
 histogram( ~calories | method, data = calm, nint = 24)
+>>>>>>> 0be68b043bf6833bc22e72080b599f8c4a26db41
