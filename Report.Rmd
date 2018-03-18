@@ -1,47 +1,86 @@
 ---
 title: "Calorie Burning Report"
 output: pdf_document
-bibliography: bibliography.bib
+bibliography: ./bibliography.bib
 ---
+
+# Introduction
+
+This project aimed to examine data originally gathered by @macdonald1914mechanical and conveyed to us by @greenwood1918efficiency, consisting of observations on seven people performing work using a bicycle ergometer, although our current dataset appears to include extra values and data not found in @greenwood1918efficiency, though these values may indeed be present in @macdonald1914mechanical, access to which could not be obtained in a timely manner. Hitherto it shall be assumed that every row in our dataset represents a separate individual, giving a total of 24 separate individuals across 24 rows. The dataset includes three separate measurements - weight of the individuals, calories per hour spent by individuals which serves as a measure of workout intensity, and calories spent during the task.
 
 # Methods and procedure
 
+```{r include=FALSE, cache=FALSE}
+requirements = c("nlme", "effects", "pastecs", "lattice", 
+                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw")
+lapply(requirements, require, character.only = T)
+```
+
 ## Data exploration
-First let's load the data and look at the summary.
-```{r}
-requirements = c("nlme", "effects", "pastecs", "lattice", "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw")
-if (length(setdiff(requirements, rownames(installed.packages()))) > 0) {
-  invisible(install.packages(setdiff(requirements, rownames(installed.packages())))) 
-}
-for (i in seq(1, length(requirements))) {
-  invisible(library(requirements[i], character.only=T))
-}
+First we load and examine the data.
+```{r echo=FALSE}
 options(digits=4)
 muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
+muscledata
+```
+
+And the summary:
+
+```{r echo = FALSE}
 summary(muscledata)
 ```
 
 Here are some descriptive statistics.
-```{r}
+
+```{r echo=FALSE}
 plot(muscledata)
 ```
 
-Let's check correlation between the weight of an individual and the intensity of their workout, as defined by the calories burnt per hour, using the Pearson correlation coefficient:
-```{r}
-cor.test(muscledata$weight, muscledata$calhour, alternative="two.sided", method="pearson")
+Some exploratory statistics for all individuals:
+
+```{r echo = FALSE}
+muscledata_edit = na.omit(muscledata)
+attach(muscledata)
+par(mfrow=c(1,3))
+stat.desc(muscledata[,c("weight","calhour","calories")],basic = TRUE, desc = TRUE)
+boxplot(weight, main='weight', col="pink")
+boxplot(calhour, main='calhour', col="magenta")
+boxplot(calories, main='calories', col="purple")
+par(mfrow=c(1,1))
+#boxplot(calories~calhour, xlab="Calhour",ylab="Calories")
 ```
 
-The P value is way, way more than 0.05. We accept the null hypothesis, there seems to be no significant correlation. The intesities of workout seem to be randomly distributed among people of different weights, which is optimal to draw conclusions concerning heat production.
-
-Let's try plotting a simple linear model to this relationship.
-```{r}
-weightCalhr = lm(weight~calhour, data=muscledata)
-summary(weightCalhr)
+```{r echo = FALSE}
+ggpairs(muscledata_edit)
 ```
-The linear model confirms our suspicion that there is no relationship here.
+
+Estimating correlation for individuals:
+
+```{r echo = FALSE}
+ggplot(muscledata_edit, aes(x=calhour, y=calories)) + geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("calhour vs. calories")
+```
+
+Calculating the covariance and correlation:
+
+```{r echo = FALSE}
+cor(calhour, calories)
+```
+
+Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
+
+```{r echo = FALSE}
+cor.test(calhour, calories, alternative = "two.sided", method = "pearson")
+```
+
+```{r echo = FALSE}
+cor.test(weight, calories, alternative = "two.sided", method = "pearson")
+```
+
+
+
 
 Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
-```{r}
+```{r echo = FALSE}
 muscledata_edit = na.omit(muscledata)
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
 muscledata.complete.case.summary = summary(muscledata.complete.case)
@@ -53,13 +92,13 @@ Using the summary method, we conclude that adding weight, calhour and interactio
 
 
 
-```{r}
+```{r echo = FALSE}
 plot(allEffects(muscledata.complete.case))
 ```
 
 There seems to be a relationship between calhour and missing data. Clearly, there is a Missing at Random (MAR) mechanism involved - P(Missing) depends only on the observed values of calhour.
 
-```{r}
+```{r echo = FALSE}
 muscledata.complete.case.2 = lm(calories~calhour+weight+calhour*weight, data=muscledata_edit)
 summary(muscledata.complete.case.2)
 plot(allEffects(muscledata.complete.case.2))
@@ -68,71 +107,132 @@ plot(allEffects(muscledata.complete.case.2))
 
 ## Missing data exploration
 
-```{r}
-aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"))
+Let's explore the missingness of our data:
+
+```{r echo = FALSE}
+aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
 ```
 
 
-```{r}
+```{r echo = FALSE}
+par(mfrow=c(1,1))
 aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
-barMiss(muscledata[,c("calories","weight")])
-histMiss(muscledata)
-histMiss(muscledata, pos=2)
+
+histMiss(muscledata, col= c("pink", "purple"))
+legend(40,8, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+histMiss(muscledata, pos=2, col= c("pink", "purple"))
+legend(52,8, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+marginplot(muscledata[c("calhour","calories")], col= c("pink", "purple"))
+legend(12, 345, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+marginplot(muscledata[c("weight","calories")], col= c("pink", "purple"))
+legend(45, 345, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
 ```
 
-
+These two histograms show us that the missing calories bellong to the low calhour values but for weights the missing data is distributed evenly accross the spectra. This suggests MAR as a plausible missingness mechanism.
 
 ## Complete case analysis
 
+First we need to select the best linear model to use for CC - we can do this using stepwise AIC.
+
+```{r echo = FALSE}
+muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
+```
+
+Thus we deduce that the best-fitting model is:
+$$
+calories_i = \beta_0 + \beta_1*weight_i + \beta_2*calhour_i + \beta_3*(weight_i*calhour_i) + \epsilon_i
+$$
+
+The R summary for this model:
+
+```{r echo = FALSE}
+muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
+summary(muscledata.complete.case)
+```
+
+```{r echo = FALSE}
+plot(allEffects(muscledata.complete.case))
+```
+
+
 ## Multiple imputation analysis
 
-```{r}
-invisible(capture.output(muscledata.imp <- mice(muscledata, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
-invisible(muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))) # analysis, creating a Q for each imputed dataset
-muscledata.est <- pool(muscledata.fit) # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
-summary(muscledata.est)
+Put in a short desc of multiple imputaton here
+
+First we use the PMM method:
+
+```{r echo = FALSE}
+invisible(capture.output(muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100))) # imputation of different values, 100 different complete datasets
+invisible(capture.output(muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))))  # analysis, creating a Q for each imputed dataset
+invisible(capture.output(muscledata.pmm = pool(muscledata.fit.pmm)))  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+summary(muscledata.pmm)
 ```
 
 
-```{r}
-MI.fitted.values = complete(muscledata.imp, "long", inc=T)
-muscledata.results.MIALL <- glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
+```{r echo = FALSE}
+MI.fitted.values.pmm = complete(muscledata.imp.pmm, "long", inc=T)
+muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.pmm)
 dlist=list(calhour=seq(20,60,10))
-plot(allEffects(muscledata.results.MIALL,xlevels=dlist)[1])
+plot(allEffects(muscledata.results.mi.pmm,xlevels=dlist)[1], main="PMM effects plot")
 ```
 
-Clearly something cool happened here.
+```{r echo = FALSE}
+col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
+```
+What if we use the Bayesian norm method?
 
-```{r}
-col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
+```{r echo = FALSE}
+invisible(capture.output(muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
+invisible(capture.output(muscledata.fit.norm = with(data=muscledata.imp.norm, exp=glm(calories~weight+calhour+weight*calhour))))  # analysis, creating a Q for each imputed dataset
+invisible(capture.output(muscledata.norm = pool(muscledata.fit.norm)))  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+summary(muscledata.norm)
 ```
 
-```{r}
-muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
-muscledata.without13 = muscledata[!muscledata$calhour == 13,]
-invisible(capture.output(muscledata.without13.imp <- mice(muscledata.without13, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
-invisible(muscledata.without13.fit <- with(data=muscledata.without13.imp, exp=glm(calories~weight+calhour+weight*calhour))) # analysis, creating a Q for each imputed dataset
-muscledata.without13.est <- pool(muscledata.without13.fit) # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
-summary(muscledata.without13.est)
+
+```{r echo = FALSE}
+MI.fitted.values.norm = complete(muscledata.imp.norm, "long", inc=T)
+muscledata.results.mi.norm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.norm)
+dlist=list(calhour=seq(20,60,10))
+plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[1], main="NORM effects plot")
+```
+
+```{r echo = FALSE}
+col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
 ```
 
 ## IPW analysis
 
-```{r}
-muscledata$r<-as.numeric(!is.na(muscledata$calories))
-head(muscledata)
-muscledata.ipw.glm<-glm(r ~ weight+calhour+weight*calhour, data=muscledata,family=binomial)
+
+```{r echo = FALSE}
+IPWanal_muscledata = muscledata
+IPWanal_muscledata$r = as.numeric(!is.na(IPWanal_muscledata$calories))
+muscledata.ipw.glm = lm(r ~ calhour, data=IPWanal_muscledata, family=binomial)
 summary(muscledata.ipw.glm)
-```
-
-```{r}
-muscledata$w<-1/fitted(muscledata.ipw.glm)
-muscledata.results.ipw<- glm(calories~weight+calhour+weight*calhour, data=muscledata, weights=muscledata$w)
+IPWanal_muscledata$w = 1/fitted(muscledata.ipw.glm)
+muscledata.results.ipw= lm(calories~weight+calhour+weight*calhour, data=IPWanal_muscledata, weights=muscledata$w)
 summary(muscledata.results.ipw)
-plot(allEffects(muscledata.results.ipw))
 ```
 
+```{r echo = FALSE}
+plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
+```
+
+We can take a look at the AIC values of the complete case and IPW models to compare:
+
+```{r echo = FALSE}
+AIC(muscledata.complete.case)
+AIC(muscledata.results.ipw)
+```
+ 
 
 
 # Discussion
@@ -142,4 +242,6 @@ And in my opnion, Bayesian would make sense. MI is better in here. You cannot gi
 # Conclusion
 
 The missing data is correlated with the calhour - intensity of the exercise - hence there is something wrong with the experimental design. Such as the way they measured heat production, so they could not accurately measure calorie burning. While we have no data for low calhour values, attributing weights to the values we have is not workable for the 13 calhour data point. That being said, the MI approach provides a more robust estimates for missing data.
+
+# References
 
