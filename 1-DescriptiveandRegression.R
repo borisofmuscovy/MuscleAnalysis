@@ -25,7 +25,6 @@ par(mfrow=c(1,3))
 boxplot(weight, main='weight', col="pink")
 boxplot(calhour, main='calhour', col="magenta")
 boxplot(calories, main='calories', col="purple")
-boxplot(calories~calhour, xlab="Calhour",ylab="Calories")
 ggpairs(muscledata_edit)
 
 #estimate correlation (individuals)
@@ -127,7 +126,7 @@ method = rep(c("pmm", "norm"), each = nrow(muscledata))
 calm = data.frame(muscledata = calories, method = method)
 histogram( ~calories | method, data = calm, nint = 24)
 
-<<<<<<< HEAD
+
 summary(muscledata.results.ipw)       
 summary(muscledata.complete.case)
 summary(muscledata.pmm)    
@@ -136,7 +135,8 @@ summary(muscledata.norm)
 ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
 ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
 ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
-=======
+
+muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
 muscledata.fit.pmm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
 
@@ -164,4 +164,4 @@ plot(allEffects(MI.fitted.values.pmm.excl.13,xlevels=dlist)[1], main="PMM effect
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
 histogram( ~calories | method, data = calm, nint = 24)
->>>>>>> 0be68b043bf6833bc22e72080b599f8c4a26db41
+
