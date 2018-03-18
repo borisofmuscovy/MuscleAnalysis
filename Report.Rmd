@@ -60,10 +60,10 @@ Estimating correlation for individuals:
 ggplot(muscledata_edit, aes(x=calhour, y=calories)) + geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("calhour vs. calories")
 ```
 
-Calculating the covariance and correlation:
+Calculating the correlation if we exclude missing data:
 
 ```{r echo = FALSE}
-cor(calhour, calories)
+cor(muscledata_edit$calhour, muscledata_edit$calories)
 ```
 
 Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
@@ -111,12 +111,6 @@ Let's explore the missingness of our data:
 
 ```{r echo = FALSE}
 aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
-```
-
-
-```{r echo = FALSE}
-par(mfrow=c(1,1))
-aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
 
 histMiss(muscledata, col= c("pink", "purple"))
 legend(40,8, legend=c("Observed Data", "Missing Data"),
@@ -168,12 +162,17 @@ Put in a short desc of multiple imputaton here
 
 First we use the PMM method:
 
-```{r echo = FALSE}
-invisible(capture.output(muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100))) # imputation of different values, 100 different complete datasets
-invisible(capture.output(muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))))  # analysis, creating a Q for each imputed dataset
-invisible(capture.output(muscledata.pmm = pool(muscledata.fit.pmm)))  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+```{r echo = FALSE, include=FALSE, cache=FALSE}
+muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100) # imputation of different values, 100 different complete datasets
+muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))  # analysis, creating a Q for each imputed dataset
+muscledata.pmm = pool(muscledata.fit.pmm)  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
 summary(muscledata.pmm)
 ```
+
+```{r}
+summary(muscledata.pmm)
+```
+
 
 
 ```{r echo = FALSE}
@@ -189,10 +188,13 @@ stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, 
 ```
 What if we use the Bayesian norm method?
 
+```{r echo = FALSE, include=FALSE, cache=FALSE}
+muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100) # imputation of different values, 100 different complete datasets
+muscledata.fit.norm = with(data=muscledata.imp.norm, exp=glm(calories~weight+calhour+weight*calhour))  # analysis, creating a Q for each imputed dataset
+muscledata.norm = pool(muscledata.fit.norm)  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+```
+
 ```{r echo = FALSE}
-invisible(capture.output(muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100))) # imputation of different values, 100 different complete datasets
-invisible(capture.output(muscledata.fit.norm = with(data=muscledata.imp.norm, exp=glm(calories~weight+calhour+weight*calhour))))  # analysis, creating a Q for each imputed dataset
-invisible(capture.output(muscledata.norm = pool(muscledata.fit.norm)))  # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
 summary(muscledata.norm)
 ```
 
