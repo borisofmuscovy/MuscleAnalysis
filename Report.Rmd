@@ -239,7 +239,7 @@ AIC(muscledata.results.ipw)
 
 # Discussion
 
-And in my opnion, Bayesian would make sense. MI is better in here. You cannot give weights to lost data. 
+
 
 # Conclusion
 
