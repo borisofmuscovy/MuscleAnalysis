@@ -78,7 +78,7 @@ legend(45, 345, legend=c("Observed Data", "Missing Data"),
 
 ##fitting the model
 #Using stepwise with AIC to select the best model
-muscledata.stepwise <- step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
+muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 
 #calories = β0 + β1*weight + β2*calhour + β3*(weight*calhour) = 0
@@ -128,9 +128,9 @@ AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
 anova(muscledata.fit.norm, muscledata.fit.pmm)
 
-calories <- c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
-method <- rep(c("pmm", "norm"), each = nrow(muscledata))
-calm <- data.frame(muscledata = calories, method = method)
+calories = c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
+method = rep(c("pmm", "norm"), each = nrow(muscledata))
+calm = data.frame(muscledata = calories, method = method)
 histogram( ~calories | method, data = calm, nint = 25)
 
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
