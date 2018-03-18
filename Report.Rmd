@@ -12,7 +12,7 @@ This project aimed to examine data originally gathered by @macdonald1914mechanic
 
 ```{r include=FALSE, cache=FALSE}
 requirements = c("nlme", "effects", "pastecs", "lattice", 
-                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw", "gridExtra")
+                 "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw", "gridExtra", "cowplot")
 lapply(requirements, require, character.only = T)
 ```
 
@@ -266,9 +266,9 @@ IPW assigns weights to each observation so it uses already availible ones. Since
 complete=ggplot(muscledata_edit, aes(x=weight*calhour, y=calories ))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 norm=ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 pmm=ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
-#plot_grid(complete, pmm, norm , 
-          #labels = c("CC/IPW", "PMM", "NORM"),
-          #ncol = 2, nrow = 2) #plot_grid and cowplot package are obsolete!
+plot_grid(complete, pmm, norm , 
+          labels = c("CC/IPW", "PMM", "NORM"),
+          ncol = 2, nrow = 2)
 ```
 
 
