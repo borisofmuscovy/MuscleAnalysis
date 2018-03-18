@@ -79,7 +79,6 @@ legend(45, 345, legend=c("Observed Data", "Missing Data"),
 ##fitting the model
 #Using stepwise with AIC to select the best model
 muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
-muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 
 #calories = β0 + β1*weight + β2*calhour + β3*(weight*calhour) = 0
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
