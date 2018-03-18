@@ -126,7 +126,6 @@ AIC(muscledata.results.ipw)
 calories = c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
 method = rep(c("pmm", "norm"), each = nrow(muscledata))
 calm = data.frame(muscledata = calories, method = method)
-<<<<<<< HEAD
 histogram( ~calories | method, data = calm, nint = 25)
 
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
@@ -155,6 +154,4 @@ plot(allEffects(MI.fitted.values.pmm.excl.13,xlevels=dlist)[1], main="PMM effect
 
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
-=======
 histogram( ~calories | method, data = calm, nint = 24)
->>>>>>> 2ed57736b5edca759e785728129221093be24679
