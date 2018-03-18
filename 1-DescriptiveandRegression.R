@@ -1,16 +1,11 @@
 #Used Packages
-library(nlme)
-library(lme4)
-library(effects)
-library(lattice)
-library(pastecs)
-library(psych)
-library(ggplot2)
-library(GGally)
-library(mice)
-library(VIM)
-library(aod)
-library(BaM)
+requirements = c("nlme", "effects", "pastecs", "lattice", "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw")
+if (length(setdiff(requirements, rownames(installed.packages()))) > 0) {
+  invisible(install.packages(setdiff(requirements, rownames(installed.packages())))) 
+}
+for (i in seq(1, length(requirements))) {
+  invisible(library(requirements[i], character.only=T))
+}
 
 #Importing of the data
 muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
@@ -19,10 +14,8 @@ muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
 muscledata.summary = summary(muscledata)
 muscledata.summary
 plot(muscledata)
+attach(muscledata)
 muscledata_edit = na.omit(muscledata)
-calories = muscledata_edit$calories
-calhour = muscledata_edit$calhour
-weight = muscledata_edit$weight
 
 #For All Individuals
 descrip.muscledata = stat.desc(muscledata_edit[,c("weight","calhour","calories")],basic = TRUE, desc = TRUE)
@@ -40,7 +33,10 @@ ggpairs(muscledata_edit)
 par(mfrow=c(1,1))
 plot(calories~calhour,  main='Calhour vs Calories')
 abline(lm(calories~calhour), col=2)
-ggplot(muscledata_edit, aes(x=calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(muscledata_edit, aes(x=calhour, y=calories))
++ geom_point(colour="red") 
++ geom_smooth(colour="orange", method="lm") 
++ ggtitle("calhour vs. calories")
 
 #calculating the covariance and correlation
 corr.calhour.calories = cor(calhour, calories)
@@ -78,7 +74,6 @@ legend(45, 345, legend=c("Observed Data", "Missing Data"),
 
 ##fitting the model
 #Using stepwise with AIC to select the best model
-muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 
 #calories = β0 + β1*weight + β2*calhour + β3*(weight*calhour) = 0
@@ -143,3 +138,19 @@ pool.r.squared(muscledata.fit.pmm)
 summary(muscledata.results.ipw)         
 summary(muscledata.complete.case)   
 
+# ROBINS NON-13 TESTS
+
+muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
+muscledata.without13 = muscledata[!muscledata$calhour == 13,]
+muscledata.without13.imp <- mice(muscledata.without13, meth = c("", "", "norm"), m=100) # imputation of different values, 100 different complete datasets
+muscledata.without13.fit <- with(data=muscledata.without13.imp, exp=glm(calories~weight+calhour+weight*calhour)) # analysis, creating a Q for each imputed dataset
+muscledata.without13.est <- pool(muscledata.without13.fit) # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
+summary(muscledata.without13.est)
+
+MI.fitted.values.pmm.excl.13 = complete(muscledata.without13.est, "long", inc=T)
+muscledata.results.mi.pmm.excl.13 = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.pmm.excl.13)
+dlist=list(calhour=seq(20,60,10))
+plot(allEffects(MI.fitted.values.pmm.excl.13,xlevels=dlist)[1], main="PMM effects plot")
+
+col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
