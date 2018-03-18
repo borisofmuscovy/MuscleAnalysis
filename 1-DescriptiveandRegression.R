@@ -130,15 +130,4 @@ AIC(muscledata.results.ipw)
 calories = c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
 method = rep(c("pmm", "norm"), each = nrow(muscledata))
 calm = data.frame(muscledata = calories, method = method)
-histogram( ~calories | method, data = calm, nint = 25)
-
-muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit.pmm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
-
-muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100)
-muscledata.fit.norm = with(data=muscledata.imp, exp=lm(calories~weight+calhour+weight*calhour))
-pool.r.squared(muscledata.fit.norm)
-pool.r.squared(muscledata.fit.pmm)
-summary(muscledata.results.ipw)       
-summary(muscledata.complete.case)
-
+histogram( ~calories | method, data = calm, nint = 24)
