@@ -1,6 +1,7 @@
 ---
 title: "Calorie Burning Report"
 output: pdf_document
+bibliography: bibliography.bib
 ---
 
 # Methods and procedure
@@ -8,7 +9,7 @@ output: pdf_document
 ## Data exploration
 First let's load the data and look at the summary.
 ```{r}
-requirements = c("nlme", "effects", "pastecs", "lattice", "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4")
+requirements = c("nlme", "effects", "pastecs", "lattice", "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw")
 if (length(setdiff(requirements, rownames(installed.packages()))) > 0) {
   invisible(install.packages(setdiff(requirements, rownames(installed.packages())))) 
 }
@@ -87,6 +88,7 @@ invisible(muscledata.fit <- with(data=muscledata.imp, exp=glm(calories~weight+ca
 muscledata.est <- pool(muscledata.fit) # pooling the Qs together to create one estimate Q mean. if Q are approx normally distributed, we calculate mean over all Q and sum the within and between imputation variance using Rubins method
 summary(muscledata.est)
 ```
+
 
 ```{r}
 MI.fitted.values = complete(muscledata.imp, "long", inc=T)
