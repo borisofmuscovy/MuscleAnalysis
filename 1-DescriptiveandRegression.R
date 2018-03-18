@@ -41,6 +41,8 @@ par(mfrow=c(1,1))
 plot(calories~calhour,  main='Calhour vs Calories')
 abline(lm(calories~calhour), col=2)
 ggplot(muscledata_edit, aes(x=calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(muscledata_edit, aes(x=weight, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
 
 #calculating the covariance and correlation
 corr.calhour.calories = cor(calhour, calories)
@@ -88,31 +90,31 @@ muscledata.complete.case.summary
 
 #handling missing data with MI(PMM)
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit.pmm = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.pmm = pool(muscledata.fit.pmm)
 summary(muscledata.pmm)
 
 MI.fitted.values.pmm = complete(muscledata.imp.pmm, "long", inc=T)
-muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
+muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.pmm)
 dlist=list(calhour=seq(20,60,10))
 plot(allEffects(muscledata.results.mi.pmm,xlevels=dlist)[1], main="PMM effects plot")
 
-col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
+col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
 
 #handling missing data with MI(norm)
 muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100)
-muscledata.fit.norm = with(data=muscledata.imp, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.fit.norm = with(data=muscledata.imp.norm, exp=glm(calories~weight+calhour+weight*calhour))
 muscledata.norm = pool(muscledata.fit.norm)
 summary(muscledata.norm)
 
 MI.fitted.values.norm = complete(muscledata.imp.norm, "long", inc=T)
-muscledata.results.MIALL = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values)
+muscledata.results.mi.norm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.norm)
 dlist=list(calhour=seq(20,60,10))
-plot(allEffects(muscledata.results.MIALL,xlevels=dlist)[1], main="NORM effects plot")
+plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[1], main="NORM effects plot")
 
-col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
+col = rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
+stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
 
 ##handling missing data with IPW
 muscledata$r = as.numeric(!is.na(muscledata$calories))
@@ -127,15 +129,16 @@ summary(muscledata.results.ipw)
 AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
 
-calories <- c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
-method <- rep(c("pmm", "norm"), each = nrow(muscledata))
-calm <- data.frame(muscledata = calories, method = method)
+calories = c(complete(muscledata.imp.pmm)$calories, complete(muscledata.imp.norm)$calories)
+method = rep(c("pmm", "norm"), each = nrow(muscledata))
+calm = data.frame(muscledata = calories, method = method)
 histogram( ~calories | method, data = calm, nint = 24)
 
-
-summary(muscledata.results.ipw)
+summary(muscledata.results.ipw)       
 summary(muscledata.complete.case)
-summary(muscledata.pmm)
+summary(muscledata.pmm)    
 summary(muscledata.norm)
 
-
+ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
+ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("calhour vs. calories")
