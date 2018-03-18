@@ -54,22 +54,16 @@ ggpairs(muscledata_edit)
 ```
 
 Here we see that there is a strong positive correlation between calhour and calories (0.95). Whereas, a slightly positive correlation between weight and calories (0.11). 
-
-<<<<<<< HEAD
-Scatterplot wiht interaction and calories:
+Scatterplot with interaction and calories:
 
 ```{r echo = FALSE}
 ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("Interaction vs. calories")
-=======
-```{r echo = FALSE}
-ggplot(muscledata_edit, aes(x=calhour, y=calories)) + geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("calhour vs. calories")
 ```
 
 Calculating the correlation if we exclude missing data:
 
 ```{r echo = FALSE}
 cor(muscledata_edit$calhour, muscledata_edit$calories)
->>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
 ```
 
 Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
@@ -78,11 +72,7 @@ Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;
 cor.test(muscledata_edit$calhour, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
 ```
 
-<<<<<<< HEAD
 This saying that there is no direct relation between weights and calories.
-=======
-
-
 
 Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
 ```{r echo = FALSE}
@@ -94,9 +84,6 @@ plot(allEffects(muscledata.complete.case))
 ```
 
 Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method results in a different interpretation).
-
-
->>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
 
 ```{r echo = FALSE}
 cor.test(muscledata_edit$weight, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
@@ -110,16 +97,12 @@ All missing is in calories.
 
 ```{r echo = FALSE}
 aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
-<<<<<<< HEAD
 ```
+
 In second and third we see that the missing data is distributed among weights but it is biased in calhour. The missing data  is present in the lower values of calhour. We assume that this might be because of the machine that is not efficiently working with such small heat produced by the participants.This suggests MAR as a plausible missingness mechanism. Boris explain what is MAR to the client. 
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.width = 10}
 par(mfrow=c(1,1))
-aggr(muscledata, combined=TRUE, numbers = TRUE, prop = TRUE, cex.numbers=0.87, varheight = FALSE)
-=======
->>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
-
 histMiss(muscledata, col= c("pink", "purple"))
 legend(40,8, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
@@ -271,23 +254,21 @@ AIC(muscledata.results.ipw)
 
 # Discussion
 
-<<<<<<< HEAD
 Due to the NA values, we conducted a full model analysis with a complete case and three NA comparsions (you can write this better) models. Beacuse the NA values are not evenly distrubited among calhour, we decided to try different approaches for NA handling.
 
-pmm generates the data accordıng to the pattern ın the observed ones. ın our cases, the data ıs dıscreted by the body weıght, so pmm generated the data dıscreted as well. ın norm method, the data ıs generated based on normal dıstrıbutıon.
+PMM generates the data accordıng to the pattern ın the observed ones. ın our cases, the data ıs dıscreted by the body weıght, so pmm generated the data dıscreted as well. ın norm method, the data ıs generated based on normal dıstrıbutıon.
 
 İn the following three graphs we can see that the behaviour of the ınteraction factor vs. calories is simillar for the cc model and the two models created under MI. This three graphs are relevant to see how the two different methods chose in MI generate the new values.
 
 IPW assigns weights to each observation so it uses already availible ones. Since all calorıes values ın calhour 13 are  mıssıng, the method cannot assıgn a weıght. no value can represent thıs group, other mıssıng values fall ınto calhour 19, whıle a hıgher weıght ıs assıgned to the only avaılable data ın calhour 19. so the only dıfference between cc and ıpw is only based on thıs value, thus the graph is the mostly the same for both CC and IPW and that's why we chose to represent both with the same graph.
 
 ```{r echo = FALSE}
-library("cowplot")
 complete=ggplot(muscledata_edit, aes(x=weight*calhour, y=calories ))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 norm=ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 pmm=ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
-plot_grid(complete, pmm, norm , 
-          labels = c("CC/IPW", "PMM", "NORM"),
-          ncol = 2, nrow = 2)
+#plot_grid(complete, pmm, norm , 
+          #labels = c("CC/IPW", "PMM", "NORM"),
+          #ncol = 2, nrow = 2) #plot_grid and cowplot package are obsolete!
 ```
 
 
@@ -300,12 +281,11 @@ stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, 
 ```{r echo=FALSE}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
-
 ```
 
 
 Because there are no calorie values for calhour 13, there are no data to atributte weights to. So, IPW will make a difference only for calhour 19. This gives us a slightly better model with IPW than complete case. 
-=======
+
 ```{r FigCompare, echo = FALSE, fig.width=10}
 
 CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands")
@@ -317,16 +297,10 @@ grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
 ```
 
 
-And in my opnion, Bayesian would make sense. MI is better in here. You cannot give weights to lost data. 
->>>>>>> b5a8fe6738a72c08aa25e773812066f8c46ea85b
-
 # Conclusion
-plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[1], main="NORM effects plot")
 
-In our case, ıpw doesn't come as an improvement in comparsion to the cc model. 
-and usıng standard error
-
-
+In our case, IPW doesn't come as an improvement in comparison to the CC model. 
+and using standard error
 
 
 The missing data is correlated with the calhour - intensity of the exercise - hence there is something wrong with the experimental design. Such as the way they measured heat production, so they could not accurately measure calorie burning. While we have no data for low calhour values, attributing weights to the values we have is not workable for the 13 calhour data point. That being said, the MI approach provides a more robust estimates for missing data.
