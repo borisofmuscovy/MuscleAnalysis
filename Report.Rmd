@@ -1,6 +1,6 @@
 ---
 title: "Calorie Burning Report"
-output: pdf_document
+output: bookdown::pdf_document2
 bibliography: ./bibliography.bib
 ---
 
@@ -32,13 +32,13 @@ summary(muscledata)
 
 Here are some descriptive statistics.
 
-```{r echo=FALSE}
+```{r fig1, echo=FALSE, fig.cap="\\label{fig:muscleplots}Summary plots for the dataset."}
 plot(muscledata)
 ```
 
 Some exploratory statistics for all individuals:
 
-```{r echo = FALSE}
+```{r fig2, echo = FALSE, fig.cap="\\label{fig:muscledataboxplots}Boxplots"}
 muscledata_edit = na.omit(muscledata)
 attach(muscledata)
 par(mfrow=c(1,3))
@@ -88,7 +88,7 @@ muscledata.complete.case.summary
 plot(allEffects(muscledata.complete.case))
 ```
 
-Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method reults in a different interpretation).
+Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method results in a different interpretation).
 
 
 
