@@ -82,7 +82,7 @@ muscledata.complete.case.summary
 
 #handling missing data with MI(PMM)
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100)
-muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))
+muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=lm(calories~weight+calhour+weight*calhour))
 muscledata.pmm = pool(muscledata.fit.pmm)
 summary(muscledata.pmm)
 

@@ -260,11 +260,15 @@ AIC(muscledata.results.ipw)
 
 Due to the NA values, we conducted a full model analysis with a complete case and three NA comparsions (you can write this better) models. Beacuse the NA values are not evenly distrubited among calhour, we decided to try different approaches for NA handling.
 
+IPW assigns weights to each observation so it uses already availible ones. Since all calorıes values ın calhour 13 are  mıssıng, the method cannot assıgn a weıght. no value can represent thıs group, other mıssıng values fall ınto calhour 19, whıle a hıgher weıght ıs assıgned to the only avaılable data ın calhour 19. so the only dıfference between cc and ıpw is only based on thıs value, thus the graph is the mostly the same for both CC and IPW and that's why we chose to represent both with the same graph.
+
+for the MI method, we trıed two ways to generate the data correspondıng to the mıssıng data, PMM and NORM.
 PMM generates the data accordıng to the pattern ın the observed ones. ın our cases, the data ıs dıscreted by the body weıght, so pmm generated the data dıscreted as well. ın norm method, the data ıs generated based on normal dıstrıbutıon.
 
+In our MI models, there ıs no changes ın slope between each calhour and weıght ınteractıons. by checkıng the fıttıng model generated, the p-value corresponds to the weıght and the ınteractıon ıs hıgher than 0.05, whıch ındıcates these terms are not sıgnıfıcant. only the calhour effects the value of calorıes ın thıs estımated model, whıch make nonsense. ın common sense, person wıth larger body weıght generates more heats durıng the same ıntense level of workout comparıng to a person wıth lower body weıght.
 İn the following three graphs we can see that the behaviour of the ınteraction factor vs. calories is simillar for the cc model and the two models created under MI. This three graphs are relevant to see how the two different methods chose in MI generate the new values.
 
-IPW assigns weights to each observation so it uses already availible ones. Since all calorıes values ın calhour 13 are  mıssıng, the method cannot assıgn a weıght. no value can represent thıs group, other mıssıng values fall ınto calhour 19, whıle a hıgher weıght ıs assıgned to the only avaılable data ın calhour 19. so the only dıfference between cc and ıpw is only based on thıs value, thus the graph is the mostly the same for both CC and IPW and that's why we chose to represent both with the same graph.
+
 
 ```{r echo = FALSE}
 complete=ggplot(muscledata_edit, aes(x=weight*calhour, y=calories ))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
@@ -292,10 +296,10 @@ Because there are no calorie values for calhour 13, there are no data to atribut
 
 ```{r FigCompare, echo = FALSE, fig.width=10, fig.height=10}
 
-CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands")
-NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
-PMMplot = plot(allEffects(muscledata.results.mi.pmm, xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
-IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style = "bands")
+CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands",main = "CC")
+NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands",main = "Norm")
+PMMplot = plot(allEffects(muscledata.results.mi.pmm, xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands",main = "PMM")
+IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style = "bands",main = "IPW")
 class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
 grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
 ```
@@ -308,6 +312,7 @@ and using standard error
 
 
 The missing data is correlated with the calhour - intensity of the exercise - hence there is something wrong with the experimental design. Such as the way they measured heat production, so they could not accurately measure calorie burning. While we have no data for low calhour values, attributing weights to the values we have is not workable for the 13 calhour data point. That being said, the MI approach provides a more robust estimates for missing data.
+
 
 # References
 
