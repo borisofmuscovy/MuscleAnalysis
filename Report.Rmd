@@ -1,7 +1,7 @@
 ---
 title: "Calorie Consumption During Bicycle Work: A Statistical Analysis of an Incomplete Dataset"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-author: Nuno Chicoria, Boris Shilov, Murat cem Kose, Yibing Liu, Robin Vermote
+author: Nuno Chicoria, Boris Shilov, Murat Cem Kose, Yibing Liu, Robin Vermote
 output: 
   bookdown::pdf_document2:
     number_sections: true
@@ -139,7 +139,7 @@ muscledata.pmm = pool(muscledata.fit.pmm)  # pooling the Qs together to create o
 summary(muscledata.pmm)
 ```
 
-According to the resulting PMM model, none of the possible dependent variables have any statistically significant influence on our response variable. The effects plot in Fig \@ref(fig:AllEffGoodModel) shows that there is no influence of the interaction term on the response variable since the slope does not change. Notice also the contraction of the $95%$ confidence limit due to the imputation process.
+According to the resulting PMM model, none of the possible dependent variables have any statistically significant influence on our response variable. The effects plot in Fig \@ref(fig:AllEffGoodModel) shows that there is no influence of the interaction term on the response variable since the slope does not change. Notice also the contraction of the $95\%$ confidence limit due to the imputation process.
 
 The strip plot is shown in Fig. \@ref(fig:StripCompPMM) showing original data in pink and generated data in purple. We thus indeed confirm PMM-generated data follows very similar relations to the original dataset.
 
