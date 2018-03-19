@@ -213,6 +213,8 @@ AIC(muscledata.results.ipw)
 
 # Discussion
 
+<<<<<<< HEAD
+=======
 Due to the NA values, we conducted a full model analysis with a complete case and three NA comparsions (you can write this better) models. Beacuse the NA values are not evenly distrubited among calhour, we decided to try different approaches for NA handling.
 
 IPW assigns weights to each observation so it uses already availible ones. Since all calorıes values ın calhour 13 are  mıssıng, the method cannot assıgn a weıght. no value can represent thıs group, other mıssıng values fall ınto calhour 19, whıle a hıgher weıght ıs assıgned to the only avaılable data ın calhour 19. so the only dıfference between cc and ıpw is only based on thıs value, thus the graph is the mostly the same for both CC and IPW and that's why we chose to represent both with the same graph.
@@ -256,6 +258,7 @@ IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style
 class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
 grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
 ```
+>>>>>>> ca2ee8d06c7c8dfaf42df4bd1053560cc7b10f4e
 
 
 # Conclusion
