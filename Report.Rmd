@@ -129,7 +129,7 @@ plot(allEffects(muscledata.complete.case),main="Complete Case Effects Plot")
 
 ## Multiple imputation analysis
 
-Multiple imputation is an approach to dealing with incomplete data that can be applied to univariate or multivariate data. The technique replaces missing values with two or more imputed values. Unlike simpler single imputation methods where only a single value is imputed, such as mean imputation, multiple imputation as the name suggests replaces each missing value with multiple imputed values, in effect generating a number of datasets. Practically, this allows us to represent a variety of theoretical mechanisms for why the nonresponse occured. These differing datasets are known as multiply imputed datasets. These datasets are used to generate a matrix of regression coefficients, in essence building a regression model. We generate as many regression coefficient matrices as there are multiply imputed datasets. We then pool the regression coefficients into a single estimate which can be used to estimate variance. There are several methods of imputation available.
+Multiple imputation is an approach to deal with incomplete data that can be applied to univariate or multivariate data. The technique replaces missing values with two or more imputed values. Unlike simpler single imputation methods where only a single value is imputed, such as mean imputation, multiple imputation as the name suggests replaces each missing value with multiple imputed values, in effect generating a number of datasets. Practically, this allows us to represent a variety of theoretical mechanisms for why the nonresponse occured. These differing datasets are known as multiply imputed datasets. These datasets are used to generate a matrix of regression coefficients, in essence building a regression model. We generate as many regression coefficient matrices as there are multiply imputed datasets. We then pool the regression coefficients into a single estimate which can be used to estimate variance [@rubin2004multiple]. There are several methods of imputation available.
 
 First we use the predictive mean matching (PMM) method. This is one of the "default" methods and it faithfully reproduces the relations present in the original data even if they happen to be nonlinear. The results of such a simulation with 100 imputed value datasets:
 ```{r echo = FALSE, include=FALSE, cache=FALSE}
@@ -157,7 +157,7 @@ col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calorie
 stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)", scales=list(x=list(draw=FALSE)))
 ```
 
-What if we use the Bayesian norm method?
+An alternative to PMM with our dataset is Bayesian linear regression, which can create univariate missing data. This reformulates our linear model in probabilistic terms. In this method we assume a prior distribution for the parameters of the regression [@rubin2004multiple]. In our method the prior distribution is assumed to be normal (the normal model). The result is:
 
 ```{r echo = FALSE, include=FALSE, cache=FALSE}
 muscledata.imp.norm = mice(muscledata, meth = c("", "", "norm"), m=100) # imputation of different values, 100 different complete datasets
@@ -213,8 +213,6 @@ AIC(muscledata.results.ipw)
 
 # Discussion
 
-<<<<<<< HEAD
-=======
 Due to the NA values, we conducted a full model analysis with a complete case and three NA comparsions (you can write this better) models. Beacuse the NA values are not evenly distrubited among calhour, we decided to try different approaches for NA handling.
 
 IPW assigns weights to each observation so it uses already availible ones. Since all calorıes values ın calhour 13 are  mıssıng, the method cannot assıgn a weıght. no value can represent thıs group, other mıssıng values fall ınto calhour 19, whıle a hıgher weıght ıs assıgned to the only avaılable data ın calhour 19. so the only dıfference between cc and ıpw is only based on thıs value, thus the graph is the mostly the same for both CC and IPW and that's why we chose to represent both with the same graph.
@@ -258,8 +256,6 @@ IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style
 class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
 grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
 ```
->>>>>>> ca2ee8d06c7c8dfaf42df4bd1053560cc7b10f4e
-
 
 # Conclusion
 
