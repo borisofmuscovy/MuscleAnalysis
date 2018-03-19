@@ -23,7 +23,7 @@ muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
 muscledata
 ```
 
-# Methods and procedure
+# Methods and Results
 
 ## Data exploration
 
@@ -101,7 +101,7 @@ legend(45, 345, legend=c("Observed Data", "Missing Data"),
 
 Complete case analysis relies on removing rows of our dataset that have missing values - giving us a restricted sample of 16 rows to work with. 
 
-We select the best linear model to use for complete case analysis using stepwise Akaike's Information Criterion.
+We select the best linear model to use for complete case analysis using stepwise Akaike's Information Criterion - a measure of the quality of our statistical models relative to each other, which indicates the amount of information lost by excluding or including model terms.
 
 ```{r echo = FALSE}
 muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
@@ -119,32 +119,19 @@ muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscl
 summary(muscledata.complete.case)
 ```
 
+All four terms appear highly significant in this model. However, the intercept term $\beta_0$ does not have a physical meaning in this model. The significance of the interaction term means that the weight has an influence on the effect of workout intensity on calories.
 
-Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
-
-This plot telling us that there is a decrease in coeficient between calhour and calories as calhour is increasing.
-
-Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power.
-
-```{r echo = FALSE}
-cor.test(muscledata_edit$weight, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
-#(note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method results in a different interpretation).
-```
+An effects plot is presented in Fig. \@ref(fig:AllEffGoodModel). This plot indicates that there is a decrease in slope, determined by workout intensity and calories, as workout intensity is increasing.
 
 ```{r figAllEffGoodModel, echo = FALSE, fig.cap="\\label{fig:AllEffGoodModel}The All Effects plot for the Complete Case linear model."}
-muscledata_edit = na.omit(muscledata)
-muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
-muscledata.complete.case.summary = summary(muscledata.complete.case)
-muscledata.complete.case.summary
 plot(allEffects(muscledata.complete.case),main="Complete Case Effects Plot")
 ```
 
 ## Multiple imputation analysis
 
-Put in a short desc of multiple imputaton here
+Multiple imputation is an approach to dealing with incomplete data that can be applied to univariate or multivariate data. The technique replaces missing values with two or more imputed values. Unlike simpler single imputation methods where only a single value is imputed, such as mean imputation, multiple imputation as the name suggests replaces each missing value with multiple imputed values, in effect generating a number of datasets. Practically, this allows us to represent a variety of theoretical mechanisms for why the nonresponse occured. These differing datasets are known as multiply imputed datasets. These datasets are used to generate a matrix of regression coefficients, in essence building a regression model. We generate as many regression coefficient matrices as there are multiply imputed datasets. We then pool the regression coefficients into a single estimate which can be used to estimate variance. There are several methods of imputation available.
 
-First we use the PMM method:
-
+First we use the predictive mean matching (PMM) method. This is one of the "default" methods and it faithfully reproduces the relations present in the original data even if they happen to be nonlinear. The results of such a simulation with 100 imputed value datasets:
 ```{r echo = FALSE, include=FALSE, cache=FALSE}
 muscledata.imp.pmm = mice(muscledata, meth = c("", "", "pmm"), m=100) # imputation of different values, 100 different complete datasets
 muscledata.fit.pmm = with(data=muscledata.imp.pmm, exp=glm(calories~weight+calhour+weight*calhour))  # analysis, creating a Q for each imputed dataset
