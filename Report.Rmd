@@ -70,7 +70,7 @@ Calculating the correlation if we exclude missing data:
 cor(muscledata_edit$calhour, muscledata_edit$calories)
 ```
 
-Testing the population correlationL $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
+Testing the population correlation: $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
 
 ```{r echo = FALSE}
 cor.test(muscledata_edit$calhour, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
@@ -105,23 +105,25 @@ aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing da
 
 In second and third we see that the missing data is distributed among weights but it is biased in calhour. The missing data  is present in the lower values of calhour. We assume that this might be because of the machine that is not efficiently working with such small heat produced by the participants.This suggests MAR as a plausible missingness mechanism. Boris explain what is MAR to the client. 
 
-```{r figMissingHists, echo = FALSE, fig.width = 10, fig.cap="\\label{fig:MissingHists}Histograms of the observed and missing data as well as marginplots depicting histograms and correlations."}
-par(mfrow=c(1,1))
-histMiss(muscledata, col= c("pink", "purple"))
+```{r figMissingHists, echo = FALSE, fig.width = 10, fig.height=7, fig.cap="\\label{fig:MissingHists}Histograms of the observed and missing data as well as marginplots depicting histograms and correlations."}
+layout(matrix(c(1, 3, 4, 2), nrow=2, byrow=TRUE))
+
+hist1 = histMiss(muscledata, col= c("pink", "purple"))
 legend(40,8, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
 
-histMiss(muscledata, pos=2, col= c("pink", "purple"))
-legend(52,8, legend=c("Observed Data", "Missing Data"),
-       col=c("pink", "purple"), pch=19, cex=0.8)
-
-marginplot(muscledata[c("calhour","calories")], col= c("pink", "purple"))
+hist2 = marginplot(muscledata[c("calhour","calories")], col= c("pink", "purple"))
 legend(12, 345, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
 
-marginplot(muscledata[c("weight","calories")], col= c("pink", "purple"))
+hist3 = histMiss(muscledata, pos=2, col= c("pink", "purple"))
+legend(52,8, legend=c("Observed Data", "Missing Data"),
+       col=c("pink", "purple"), pch=19, cex=0.8)
+
+hist4 = marginplot(muscledata[c("weight","calories")], col= c("pink", "purple"))
 legend(45, 345, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
+
 ```
 
 ## Complete case analysis
@@ -189,7 +191,7 @@ plot(allEffects(muscledata.results.mi.pmm,xlevels=dlist)[1], main="PMM Effects P
 
 ```{r figStripCompPMM, echo = FALSE, fig.cap="\\label{fig:StripCompPMM}The strip plot of PMM data."}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
+stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)", scales=list(x=list(draw=FALSE)))
 ```
 
 What if we use the Bayesian norm method?
@@ -214,7 +216,7 @@ plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[1], main="NORM effects
 
 ```{r figStripCompNORM, echo = FALSE, fig.cap="\\label{fig:StripCompNORM}The strip plot of Bayesian NORM data."}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
+stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)", scales=list(x=list(draw=FALSE)))
 ```
 
 
@@ -266,15 +268,13 @@ plot_grid(complete, pmm, norm ,
 ```
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.width=10, fig.height=7}
 par(mfrow=c(2,1))
-col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
-```
-
-```{r echo=FALSE}
-col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
-stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
+col1 <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calories))],101)
+PMMplot = stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col1, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)", scales=list(x=list(draw=FALSE)))
+col2 <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
+NORMplot = stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col2, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)", scales=list(x=list(draw=FALSE)))
+grid.arrange(PMMplot, NORMplot, ncol=2)
 ```
 
 
