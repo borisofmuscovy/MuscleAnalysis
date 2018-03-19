@@ -36,13 +36,13 @@ summary(muscledata)
 
 Here are some descriptive statistics.
 
-```{r fig1, echo=FALSE, fig.cap="\\label{fig:muscleplots}Summary plots for the dataset."}
+```{r figLinearRegPlots, echo=FALSE, fig.cap="\\label{fig:muscleplots}Summary plots for the dataset."}
 plot(muscledata)
 ```
 
 Some exploratory statistics for all individuals:
 
-```{r fig2, echo = FALSE, fig.cap="\\label{fig:muscledataboxplots}Boxplots"}
+```{r figBoxPlots, echo = FALSE, fig.cap="\\label{fig:muscledataboxplots}Boxplots"}
 muscledata_edit = na.omit(muscledata)
 attach(muscledata)
 par(mfrow=c(1,3))
@@ -53,14 +53,14 @@ boxplot(calories, main='calories', col="purple")
 par(mfrow=c(1,1))
 ```
 
-```{r echo = FALSE}
+```{r figPairsPlot, echo = FALSE, fig.cap="\\label{fig:PairsPlot}GGpairs desc"}
 ggpairs(muscledata_edit)
 ```
 
 Here we see that there is a strong positive correlation between calhour and calories (0.95). Whereas, a slightly positive correlation between weight and calories (0.11). 
 Scatterplot with interaction and calories:
 
-```{r echo = FALSE}
+```{r figIntervsCalories, echo = FALSE, fig.cap="\\label{fig:IntervsCalories}Interaction vs calories plot"}
 ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("Interaction vs. calories")
 ```
 
@@ -79,7 +79,7 @@ cor.test(muscledata_edit$calhour, muscledata_edit$calories, alternative = "two.s
 This saying that there is no direct relation between weights and calories.
 
 Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
-```{r echo = FALSE}
+```{r figAllEffCC, echo = FALSE, fig.cap="\\label{fig:AllEffCC}All Effects plot for the complete case dataset."}
 muscledata_edit = na.omit(muscledata)
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
 muscledata.complete.case.summary = summary(muscledata.complete.case)
@@ -99,13 +99,13 @@ Let's explore the missingness of our data:
 
 All missing is in calories.
 
-```{r echo = FALSE}
+```{r figMissDatBox, echo = FALSE, fig.cap="\\label{fig:MissDatBox}Pattern of missing data across variables"}
 aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
 ```
 
 In second and third we see that the missing data is distributed among weights but it is biased in calhour. The missing data  is present in the lower values of calhour. We assume that this might be because of the machine that is not efficiently working with such small heat produced by the participants.This suggests MAR as a plausible missingness mechanism. Boris explain what is MAR to the client. 
 
-```{r echo = FALSE, fig.width = 10}
+```{r figMissingHists, echo = FALSE, fig.width = 10, fig.cap="\\label{fig:MissingHists}Histograms of the observed and missing data as well as marginplots depicting histograms and correlations."}
 par(mfrow=c(1,1))
 histMiss(muscledata, col= c("pink", "purple"))
 legend(40,8, legend=c("Observed Data", "Missing Data"),
@@ -152,7 +152,7 @@ Let's try to explain heat production in function of weight and intensity of the 
 
 This plot telling us that there is a decrease in coeficient between calhour and calories as calhour is increasing.
 
-```{r echo = FALSE}
+```{r figAllEffGoodModel, echo = FALSE, fig.cap="\\label{fig:AllEffGoodModel}The All Effects plot for the Complete Case linear model."}
 muscledata_edit = na.omit(muscledata)
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
 muscledata.complete.case.summary = summary(muscledata.complete.case)
@@ -180,21 +180,18 @@ summary(muscledata.pmm)
 
 
 
-```{r echo = FALSE}
+```{r figAllEffCompPMM, echo = FALSE, fig.cap="\\label{fig:AllEffGoodModel}The All Effects plot for MI using the PMM method."}
 MI.fitted.values.pmm = complete(muscledata.imp.pmm, "long", inc=T)
 muscledata.results.mi.pmm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.pmm)
 dlist=list(calhour=seq(20,60,10))
 plot(allEffects(muscledata.results.mi.pmm,xlevels=dlist)[1], main="PMM Effects Plot")
 ```
 
-```{r echo = FALSE}
+```{r figStripCompPMM, echo = FALSE, fig.cap="\\label{fig:StripCompPMM}The strip plot of PMM data."}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.pmm$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values.pmm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (PMM)")
 ```
 
-```{r echo = FALSE}
-ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("Interaction vs Calories (PMM)")
-```
 What if we use the Bayesian norm method?
 
 ```{r echo = FALSE, include=FALSE, cache=FALSE}
@@ -208,21 +205,18 @@ summary(muscledata.norm)
 ```
 
 
-```{r echo = FALSE}
+```{r figAllEffCompNORM, echo = FALSE, fig.cap="\\label{fig:AllEffCompNORM}The All Effects plot for MI using the Bayesian NORM method."}
 MI.fitted.values.norm = complete(muscledata.imp.norm, "long", inc=T)
 muscledata.results.mi.norm = glm(calories~weight+calhour+weight*calhour, data=MI.fitted.values.norm)
 dlist=list(calhour=seq(20,60,10))
 plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[1], main="NORM effects plot")
 ```
 
-```{r echo = FALSE}
+```{r figStripCompNORM, echo = FALSE, fig.cap="\\label{fig:StripCompNORM}The strip plot of Bayesian NORM data."}
 col <- rep(c("pink","purple")[1+as.numeric(is.na(muscledata.imp.norm$data$calories))],101)
 stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number", main="Original data vs. generated data (NORM)")
 ```
 
-```{r echo = FALSE}
-ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("Interaction vs Calories (NORM)")
-```
 
 ## IPW analysis
 
@@ -237,12 +231,8 @@ muscledata.results.ipw= lm(calories~weight+calhour+weight*calhour, data=IPWanal_
 summary(muscledata.results.ipw)
 ```
 
-```{r echo = FALSE}
+```{r figAllEffIPW, echo = FALSE, fig.cap="\\label{fig:AllEffIPW}The All Effects plot for our IPW-modelled data."}
 plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
-```
-
-```{r echo = FALSE}
-ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="red") + geom_smooth(colour="orange", method="lm") + ggtitle("Interaction vs Calories (PMM)")
 ```
 
 We can take a look at the AIC values of the complete case and IPW models to compare:
@@ -266,7 +256,7 @@ PMM generates the data accordıng to the pattern ın the observed ones. ın our 
 
 IPW assigns weights to each observation so it uses already availible ones. Since all calorıes values ın calhour 13 are  mıssıng, the method cannot assıgn a weıght. no value can represent thıs group, other mıssıng values fall ınto calhour 19, whıle a hıgher weıght ıs assıgned to the only avaılable data ın calhour 19. so the only dıfference between cc and ıpw is only based on thıs value, thus the graph is the mostly the same for both CC and IPW and that's why we chose to represent both with the same graph.
 
-```{r echo = FALSE}
+```{r figDiscInteraction, echo = FALSE, fig.width=10, fig.height=10, fig.cap="\\label{fig:DiscInteraction}Interaction scatterplots for the normal NA-excluded dataset, values fitted using NORM and values fitted using PMM."}
 complete=ggplot(muscledata_edit, aes(x=weight*calhour, y=calories ))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 norm=ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 pmm=ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
@@ -290,7 +280,7 @@ stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col,
 
 Because there are no calorie values for calhour 13, there are no data to atributte weights to. So, IPW will make a difference only for calhour 19. This gives us a slightly better model with IPW than complete case. 
 
-```{r FigCompare, echo = FALSE, fig.width=10, fig.height=10}
+```{r figDiscCompare, echo = FALSE, fig.width=10, fig.height=10, ig.cap="\\label{fig:DiscCompate}Condensed All Effects plots from the various analysis types side by side."}
 
 CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands")
 NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands")
