@@ -10,117 +10,88 @@ bibliography: ./bibliography.bib
 
 # Introduction
 
-This project aimed to examine data originally gathered by @macdonald1914mechanical and conveyed to us by @greenwood1918efficiency, consisting of observations on seven people performing work using a bicycle ergometer, although our current dataset appears to include extra values and data not found in @greenwood1918efficiency, though these values may indeed be present in @macdonald1914mechanical, access to which could not be obtained in a timely manner. Hitherto it shall be assumed that every row in our dataset represents a separate individual, giving a total of 24 separate individuals across 24 rows. The dataset includes three separate measurements - weight of the individuals, calories per hour spent by individuals which serves as a measure of workout intensity, and calories spent during the task.
-
-# Methods and procedure
-
+This project aimed to examine data originally gathered by @macdonald1914mechanical and conveyed to us by @greenwood1918efficiency, consisting of observations on seven people performing work using a bicycle ergometer, although our current dataset appears to include extra values and data not found in @greenwood1918efficiency, though these values may indeed be present in @macdonald1914mechanical, access to which could not be obtained in a timely manner. In the body of this work it shall be assumed that every row in our dataset represents a separate individual, giving a total of 24 separate individuals across 24 rows. The dataset includes three separate measurements - weight of the individuals, calories per hour spent by individuals which serves as a measure of workout intensity, and calories spent during the task.
 ```{r include=FALSE, cache=FALSE}
 requirements = c("nlme", "effects", "pastecs", "lattice", 
                  "psych", "ggplot2", "GGally", "mice", "VIM", "aod", "BaM", "lme4", "ipw", "gridExtra", "cowplot")
 lapply(requirements, require, character.only = T)
 ```
 
-## Data exploration
-First we load and examine the data.
 ```{r echo=FALSE}
 options(digits=4)
 muscledata = read.table("muscle-incomplete.txt", header=T, na.strings = "NA")
 muscledata
 ```
 
-And the summary:
+# Methods and procedure
+
+## Data exploration
+
+A set of summary statistics for the dataset is presented below. It can be immediately seen that the response calories variable is missing in eight cases and is the only incomplete variable in the dataset. The mean and median values for all variables in the dataset are very similar to each other which indicates a symmetric distribution. A matrix of summary plots for the dataset is presented in Figure \@ref(fig:PairsPlot). We can clearly see what appears to be an extremely strong positive correlation between calories and workout intensity ($0.95$), and a very small positive correlation between calories and weight($0.11$). The scatterplot further indicates that the correlation between calories and workout intensity is very likely to be linear.
+
+The distributions of the values are plotted as boxplots in Fig. \@ref(fig:muscledataboxplots). Note that the response variable is plotted with missing values excluded in all of these figures, thus despite expecting an approximately similar distribution between workout intensity and calories variables, the calories distribution is shifted upwards due to the missing values.
 
 ```{r echo = FALSE}
-summary(muscledata)
-```
-
-Here are some descriptive statistics.
-
-```{r figLinearRegPlots, echo=FALSE, fig.cap="\\label{fig:muscleplots}Summary plots for the dataset."}
-plot(muscledata)
-```
-
-Some exploratory statistics for all individuals:
-
-```{r figBoxPlots, echo = FALSE, fig.cap="\\label{fig:muscledataboxplots}Boxplots"}
 muscledata_edit = na.omit(muscledata)
 attach(muscledata)
-par(mfrow=c(1,3))
 stat.desc(muscledata[,c("weight","calhour","calories")],basic = TRUE, desc = TRUE)
+```
+
+
+```{r figBoxPlots, echo = FALSE, fig.cap="\\label{fig:muscledataboxplots}Boxplots for the dependent variables weight, calhour and independent variable calories."}
+par(mfrow=c(1,3))
 boxplot(weight, main='weight', col="pink")
 boxplot(calhour, main='calhour', col="magenta")
 boxplot(calories, main='calories', col="purple")
 par(mfrow=c(1,1))
 ```
 
-```{r figPairsPlot, echo = FALSE, fig.cap="\\label{fig:PairsPlot}GGpairs desc"}
+```{r figPairsPlot, echo = FALSE, fig.cap="\\label{fig:PairsPlot}A summary statistics plot of the dataset using the ggplot command."}
 ggpairs(muscledata_edit)
 ```
 
-Here we see that there is a strong positive correlation between calhour and calories (0.95). Whereas, a slightly positive correlation between weight and calories (0.11). 
-Scatterplot with interaction and calories:
-
-```{r figIntervsCalories, echo = FALSE, fig.cap="\\label{fig:IntervsCalories}Interaction vs calories plot"}
-ggplot(muscledata_edit, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") + ggtitle("Interaction vs. calories")
-```
-
-Calculating the correlation if we exclude missing data:
-
-```{r echo = FALSE}
-cor(muscledata_edit$calhour, muscledata_edit$calories)
-```
-
-Testing the population correlation: $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
+We check the signifance of the two positive correlations we have found using Pearson's correlation (using Central Limit Theorem as the dataset contains around 20 rows). Here $H_0:correlation=0$; $H1:correlation \neq 0;$ $95\%CI$.
 
 ```{r echo = FALSE}
 cor.test(muscledata_edit$calhour, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
 ```
 
-This saying that there is no direct relation between weights and calories.
-
-Let's try to explain heat production in function of weight and intensity of the workout, whilst allowing for interaction of the 2 predictors (whilst increasing intensity of workout, a higher weight could result in a different speed of heat production increase):
-```{r figAllEffCC, echo = FALSE, fig.cap="\\label{fig:AllEffCC}All Effects plot for the complete case dataset."}
-muscledata_edit = na.omit(muscledata)
-muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
-muscledata.complete.case.summary = summary(muscledata.complete.case)
-muscledata.complete.case.summary
-plot(allEffects(muscledata.complete.case))
-```
-
-Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method results in a different interpretation).
-
 ```{r echo = FALSE}
 cor.test(muscledata_edit$weight, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
 ```
 
+Clearly we reject the null hypothesis with regards to workout intensity and calories and accept it with regards to weight and calories. This indicates that there is a non-spurious correlation between workout intensity and calories in the population.
+
 ## Missing data exploration
 
-Let's explore the missingness of our data:
-
-All missing is in calories.
-
-```{r figMissDatBox, echo = FALSE, fig.cap="\\label{fig:MissDatBox}Pattern of missing data across variables"}
+```{r figMissDatBox, echo = FALSE, fig.cap="\\label{fig:MissDatBox}Patterns of missing data across variables."}
 aggr(muscledata, numbers = TRUE, prop = FALSE, ylab = c("Histogram of missing data", "Pattern"), col= c("pink", "purple"))
 ```
 
-In second and third we see that the missing data is distributed among weights but it is biased in calhour. The missing data  is present in the lower values of calhour. We assume that this might be because of the machine that is not efficiently working with such small heat produced by the participants.This suggests MAR as a plausible missingness mechanism. Boris explain what is MAR to the client. 
+A histogram of missing data is shown in Fig. \@ref(fig:MissDatBox). We confirm our previous observation that all the missing values are located in our response variable.
 
-```{r figMissingHists, echo = FALSE, fig.width = 10, fig.height=7, fig.cap="\\label{fig:MissingHists}Histograms of the observed and missing data as well as marginplots depicting histograms and correlations."}
+Fig. \@ref(fig:MissingHists)A and C we see that the missing data approximately evenly distributed among the different weight variables. In Fig. \@ref(fig:MissingHists)B and D we see that the missing data distribution is extremely biased towards the lower end of the range with regards to workout intensity. This may be because of the difficulty in measuring heat production at lower exercise intensity - in other words, the missingness is likely systematic due to technical noise. Importantly, the missingness appears to depend only on an observed variable in this study - the calories. Thus, this suggests "Missing-at-Random" as the most probable missing data mechanism, allowing us to proceed with applying missing data strategies - particularly MI and IPW. We will nonetheless evaluate some of the more common methods as well.
+
+```{r figMissingHists, echo = FALSE, fig.width = 10, fig.height=10, fig.cap="\\label{fig:MissingHists}Histograms of the observed and missing data as well as marginplots depicting histograms and correlations."}
 layout(matrix(c(1, 3, 4, 2), nrow=2, byrow=TRUE))
 
 hist1 = histMiss(muscledata, col= c("pink", "purple"))
+title(main="A")
 legend(40,8, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
 
 hist2 = marginplot(muscledata[c("calhour","calories")], col= c("pink", "purple"))
+title(main="D")
 legend(12, 345, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
 
 hist3 = histMiss(muscledata, pos=2, col= c("pink", "purple"))
+title(main="B")
 legend(52,8, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
 
 hist4 = marginplot(muscledata[c("weight","calories")], col= c("pink", "purple"))
+title(main="C")
 legend(45, 345, legend=c("Observed Data", "Missing Data"),
        col=c("pink", "purple"), pch=19, cex=0.8)
 
@@ -128,21 +99,20 @@ legend(45, 345, legend=c("Observed Data", "Missing Data"),
 
 ## Complete case analysis
 
-First we need to select the best linear model to use for CC - we can do this using stepwise AIC.
+Complete case analysis relies on removing rows of our dataset that have missing values - giving us a restricted sample of 16 rows to work with. 
 
-Using the stepwise method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power. (note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method reults in a different interpretation).
-
+We select the best linear model to use for complete case analysis using stepwise Akaike's Information Criterion.
 
 ```{r echo = FALSE}
 muscledata.stepwise = step(lm(calories ~1, data=muscledata_edit), scope=~weight+calhour+weight*calhour, direction="both")
 ```
 
-Thus we deduce that the best-fitting model is:
+Lower AIC is better, thus we conclude that a model incorporating weight, calhour and an interaction term is the most explanatory linear model available given our exploratory analysis. In mathematical terms:
 $$
 calories_i = \beta_0 + \beta_1*weight_i + \beta_2*calhour_i + \beta_3*(weight_i*calhour_i) + \epsilon_i
 $$
 
-The R summary for this model:
+The summary for this model:
 
 ```{r echo = FALSE}
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
@@ -154,6 +124,13 @@ Let's try to explain heat production in function of weight and intensity of the 
 
 This plot telling us that there is a decrease in coeficient between calhour and calories as calhour is increasing.
 
+Using the summary method, we conclude that adding weight, calhour and interaction to a model that already has the other possible components results in a significant increase in explanatory power.
+
+```{r echo = FALSE}
+cor.test(muscledata_edit$weight, muscledata_edit$calories, alternative = "two.sided", method = "pearson")
+#(note to group: was explained in last 10 slides of chapter 1, he'll probably ask about this if we don't mention it since using the anova method results in a different interpretation).
+```
+
 ```{r figAllEffGoodModel, echo = FALSE, fig.cap="\\label{fig:AllEffGoodModel}The All Effects plot for the Complete Case linear model."}
 muscledata_edit = na.omit(muscledata)
 muscledata.complete.case = lm(calories~weight+calhour+weight*calhour, data=muscledata_edit)
@@ -161,7 +138,6 @@ muscledata.complete.case.summary = summary(muscledata.complete.case)
 muscledata.complete.case.summary
 plot(allEffects(muscledata.complete.case),main="Complete Case Effects Plot")
 ```
-
 
 ## Multiple imputation analysis
 
