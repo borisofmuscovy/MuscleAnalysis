@@ -1,7 +1,7 @@
 ---
 title: "Calorie Consumption During Bicycle Work: A Statistical Analysis of an Incomplete Dataset"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-author: Nuno Chicoria, Boris Shilov, Murat Cem Kose, Yibing Liu, Robin Vermote
+author: Nuno Chicoria (r0698632), Boris Shilov (r0686052), Murat Cem Kose (r0689792), Yibing Liu (r0684580), Robin Vermote (r0482826)
 output: 
   bookdown::pdf_document2:
     number_sections: true
@@ -185,7 +185,7 @@ stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col,
 
 ## Inverse Probability Weighting analysis
 
-The Inverse Probability Weighting method attemps to mitigate the bias introduced by complete case studies if the excluded population appears to be systematically different from the complete cases. The complete cases are weighted using the inverse probability of their being a complete case. As you may recall, this is intuitively a very plausible model for our data since a mechanistic hypothesis for the MAR present is due to technical noise. To emphasize, in IPW the analytical model is only fitted to complete cases. The results are thus:
+The Inverse Probability Weighting method attemps to mitigate the bias introduced by complete case studies if the excluded population appears to be systematically different from the complete cases. The complete cases are weighted using the inverse probability of their being a complete case. As you may recall, this is intuitively a very plausible model for our data since a mechanistic hypothesis for the MAR present is due to technical noise. To emphasize, in IPW the analytical model is only fitted to complete cases [@seaman2013review]. The results are thus:
 ```{r echo = FALSE}
 IPWanal_muscledata = muscledata
 IPWanal_muscledata$r = as.numeric(!is.na(IPWanal_muscledata$calories))
@@ -214,13 +214,11 @@ We can observed that IPW yields only a miniscule improvement over CC in this cas
 
 # Discussion
 
-![The coefficients for the different chosen models.](./coefficient.pdf)
+![The coefficients for the different chosen models.](./coefficient.png)
 
-Due to the NA values, we conducted a full model analysis with a complete case and two different methods for NA values replacement (MI and IPW). Beacuse the NA values are not evenly distributed among calhour, we decided to try different approaches for NA handling.
+Due to the NA values, we conducted a full model analysis with a complete case and two different methods for NA values replacement (MI and IPW). Because the NA values are not evenly distributed among workout intensity, we decided to try different approaches for NA handling.
 
-At Fig. \@ref(fig:DiscCompate) we are comparing the 4 effect plots previously shown. In our MI models, there are no significant changes in the slope which means that the interaction factor plays no role over the weight and calories as we change the workout intensity values. This supports the p-value we observed while building the model that showed us no significance for the interaction term. Nevertheless, to be able to compare all our models, and since the MI models with less parameters showed no overall improvement, we decided to use the same parameters to generate all models. For both the Complete Case and IPW model we can observe a change in the slope for higher values of workout intensity. This leads us to conclude that the interaction term is significant for this models as shown by their respective p-values.
-
-```{r figDiscCompare, echo = FALSE, fig.width=10, fig.height=10, ig.cap="\\label{fig:DiscCompate}Condensed All Effects plots from the various analysis types side by side."}
+```{r figDiscCompare, echo = FALSE, fig.width=10, fig.height=10, fig.cap="\\label{fig:DiscCompare}Condensed All Effects plots from the various analysis types side by side."}
 CCplot = plot(allEffects(muscledata.complete.case)[[1]], multiline=TRUE, ci.style = "bands",main = "CC")
 NORMplot = plot(allEffects(muscledata.results.mi.norm,xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands",main = "Norm")
 PMMplot = plot(allEffects(muscledata.results.mi.pmm, xlevels=dlist)[[1]], multiline=TRUE, ci.style = "bands",main = "PMM")
@@ -229,18 +227,25 @@ class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
 grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
 ```
 
-In the following three graphs in Fig. \@ref(fig:DiscInteraction) we can see that the behaviour of the interaction factor vs. calories is somewhat simillar for the CC model and the two models created under MI. These three graphs are relevant to see how the two different methods chose in MI generate the new values. We can see in the graph for the PMM method that the line is more deviated from the original data than in the NORM graph. So, the PMM method way of generating the new values is actually bringing our model away from the original data.
+At Fig. \@ref(fig:DiscCompare) we are comparing the 4 effect plots previously shown. In our MI models, there are no significant changes in the slope which means that the interaction factor plays no role over the weight and calories as we change the workout intensity values. This supports the p-value we observed while building the model that showed us no significance for the interaction term. Nevertheless, to be able to compare all our models, and since the MI models with less parameters showed no overall improvement, we decided to use the same parameters to generate all models. For both the Complete Case and IPW model we can observe a change in the slope for higher values of workout intensity. This leads us to conclude that the interaction term is significant for this models as shown by their respective p-values.
 
-```{r figDiscInteraction, echo = FALSE, fig.width=10, fig.height=10, fig.cap="\\label{fig:DiscInteraction}Interaction scatterplots for the normal NA-excluded dataset, values fitted using NORM and values fitted using PMM."}
+
+In the following three plots in Fig. \@ref(fig:DiscInteraction) we can see that the behaviour of the interaction factor vs. calories is somewhat simillar for the CC model and the two models created under MI. These three graphs are relevant to see how the two different methods chose in MI generate the new values. We can see in the graph for the PMM method that the line deviates more from the original data than in the Bayesian NORM graph. So, the PMM method of generating new values actually appears to be bringing our model away from the original data.
+
+```{r echo = FALSE, include=FALSE, cache=FALSE}
 complete=ggplot(muscledata_edit, aes(x=weight*calhour, y=calories ))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 norm=ggplot(MI.fitted.values.norm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
 pmm=ggplot(MI.fitted.values.pmm, aes(x=weight*calhour, y=calories))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
-plot_grid(complete, pmm, norm , 
-          labels = c("CC/IPW", "PMM", "NORM"),
-          ncol = 2, nrow = 2)
 ```
 
-Finally, IPW assigns weights to each available observation. In our case, all calories values corresponding to workout instensity 13 are  missing. Hence, the method cannot assign a weight to values that not exist. So, the only difference between the CC and IPW model is based on value generated for the workout intensity 19 (the only other entry with an NA value). This supports all our previous graphs coefficient values for both models that are always simmilar.
+
+```{r figDiscInteraction, echo = FALSE, fig.width=10, fig.height=10, fig.cap="\\label{fig:DiscInteraction}Interaction scatterplots for the normal NA-excluded dataset, values fitted using NORM and values fitted using PMM."}
+suppressWarnings(plot_grid(complete, pmm, norm , 
+          labels = c("CC/IPW", "PMM", "NORM"),
+          ncol = 2, nrow = 2))
+```
+
+Finally, IPW assigns weights to each available observation. In our case, all calories values corresponding to workout intensity 13 are missing. Hence, the method cannot assign a weight to values that do not exist. So, the only difference between the CC and IPW model is based on value generated for the workout intensity 19 (the only other entry with a missing value). This supports all our previous graphs coefficient values for both models that are always simmilar.
 
 # Conclusion
 
