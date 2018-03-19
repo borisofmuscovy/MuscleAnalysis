@@ -139,10 +139,9 @@ muscledata.pmm = pool(muscledata.fit.pmm)  # pooling the Qs together to create o
 summary(muscledata.pmm)
 ```
 
-```{r echo = FALSE}
-summary(muscledata.pmm)
-```
+According to the resulting PMM model, none of the possible dependent variables have any statistically significant influence on our response variable. The effects plot in Fig \@ref(fig:AllEffGoodModel) shows that there is no influence of the interaction term on the response variable since the slope does not change. Notice also the contraction of the $95%$ confidence limit due to the imputation process.
 
+The strip plot is shown in Fig. \@ref(fig:StripCompPMM) showing original data in pink and generated data in purple. We thus indeed confirm PMM-generated data follows very similar relations to the original dataset.
 
 
 ```{r figAllEffCompPMM, echo = FALSE, fig.cap="\\label{fig:AllEffGoodModel}The All Effects plot for MI using the PMM method."}
@@ -169,6 +168,7 @@ muscledata.norm = pool(muscledata.fit.norm)  # pooling the Qs together to create
 summary(muscledata.norm)
 ```
 
+According to our Bayesian model, the workout intensity is the only variable that has a statistically significant influence on our response variable. The effects plot in Fig. \@ref(fig:AllEffCompNORM) demonstrates a similar finding to the PMM effects plot in that due to preserving the slope remaining the same the interaction variable clearly does not have much effect. The strip plot in Fig. \@ref(fig:StripCompNORM) highlights the probabilistic nature of the Bayesian imputation algorithm, the imputed data points being sampled from the obtained posterior distribution of our parameters.
 
 ```{r figAllEffCompNORM, echo = FALSE, fig.cap="\\label{fig:AllEffCompNORM}The All Effects plot for MI using the Bayesian NORM method."}
 MI.fitted.values.norm = complete(muscledata.imp.norm, "long", inc=T)
@@ -183,24 +183,25 @@ stripplot(calories~.imp, data=MI.fitted.values.norm, jit=TRUE, fac=0.8, col=col,
 ```
 
 
-## IPW analysis
+## Inverse Probability Weighting analysis
 
-
+The Inverse Probability Weighting method attemps to mitigate the bias introduced by complete case studies if the excluded population appears to be systematically different from the complete cases. The complete cases are weighted using the inverse probability of their being a complete case. As you may recall, this is intuitively a very plausible model for our data since a mechanistic hypothesis for the MAR present is due to technical noise. To emphasize, in IPW the analytical model is only fitted to complete cases. The results are thus:
 ```{r echo = FALSE}
 IPWanal_muscledata = muscledata
 IPWanal_muscledata$r = as.numeric(!is.na(IPWanal_muscledata$calories))
 muscledata.ipw.glm = lm(r ~ calhour, data=IPWanal_muscledata, family=binomial)
-summary(muscledata.ipw.glm)
 IPWanal_muscledata$w = 1/fitted(muscledata.ipw.glm)
 muscledata.results.ipw= lm(calories~weight+calhour+weight*calhour, data=IPWanal_muscledata, weights=muscledata$w)
 summary(muscledata.results.ipw)
 ```
 
+All the parameters are highly significant, similarly to the complete cases analysis as can be expected. Fig. \@ref(fig:AllEffIPW) effects plot is also highly similar.
+
 ```{r figAllEffIPW, echo = FALSE, fig.cap="\\label{fig:AllEffIPW}The All Effects plot for our IPW-modelled data."}
 plot(allEffects(muscledata.results.ipw), main="IPW effects plot")
 ```
 
-We can take a look at the AIC values of the complete case and IPW models to compare:
+The relative AIC values of the complete case and IPW models can be used for comparison to validate that our IPW model is indeed better than simple CC:
 
 ```{r echo = FALSE}
 AIC(muscledata.complete.case)
@@ -209,7 +210,7 @@ AIC(muscledata.complete.case)
 AIC(muscledata.results.ipw)
 ```
  
-
+We can observed that IPW yields only a miniscule improvement over CC in this case.
 
 # Discussion
 
