@@ -214,8 +214,6 @@ We can observed that IPW yields only a miniscule improvement over CC in this cas
 
 # Discussion
 
-![The coefficients for the different chosen models.](./coefficient.png)
-
 Due to the NA values, we conducted a full model analysis with a complete case and two different methods for NA values replacement (MI and IPW). Because the NA values are not evenly distributed among workout intensity, we decided to try different approaches for NA handling.
 
 ```{r figDiscCompare, echo = FALSE, fig.width=10, fig.height=10, fig.cap="\\label{fig:DiscCompare}Condensed All Effects plots from the various analysis types side by side."}
@@ -226,11 +224,6 @@ IPWplot = plot(allEffects(muscledata.results.ipw)[[1]], multiline=TRUE, ci.style
 class(CCplot) = class(NORMplot) = class(PMMplot) = class(IPWplot) = "trellis"
 grid.arrange(CCplot, NORMplot, PMMplot, IPWplot, ncol=2, nrow=2)
 ```
-
-At Fig. \@ref(fig:DiscCompare) we are comparing the 4 effect plots previously shown. In our MI models, there are no significant changes in the slope which means that the interaction factor plays no role over the weight and calories as we change the workout intensity values. This supports the p-value we observed while building the model that showed us no significance for the interaction term. Nevertheless, to be able to compare all our models, and since the MI models with less parameters showed no overall improvement, we decided to use the same parameters to generate all models. For both the Complete Case and IPW model we can observe a change in the slope for higher values of workout intensity. This leads us to conclude that the interaction term is significant for this models as shown by their respective p-values.
-
-
-In the following three plots in Fig. \@ref(fig:DiscInteraction) we can see that the behaviour of the interaction factor vs. calories is somewhat simillar for the CC model and the two models created under MI. These three graphs are relevant to see how the two different methods chose in MI generate the new values. We can see in the graph for the PMM method that the line deviates more from the original data than in the Bayesian NORM graph. So, the PMM method of generating new values actually appears to be bringing our model away from the original data.
 
 ```{r echo = FALSE, include=FALSE, cache=FALSE}
 complete=ggplot(muscledata_edit, aes(x=weight*calhour, y=calories ))+ geom_point(colour="magenta") + geom_smooth(colour="purple", method="lm") +xlab("Interaction")
@@ -245,23 +238,37 @@ suppressWarnings(plot_grid(complete, pmm, norm ,
           ncol = 2, nrow = 2))
 ```
 
+At Fig. \@ref(fig:DiscCompare) we are comparing the 4 effect plots previously shown. In our MI models, there are no significant changes in the slope which means that the interaction factor plays no role over the weight and calories as we change the workout intensity values. This supports the p-value we observed while building the model that showed us no significance for the interaction term. Nevertheless, to be able to compare all our models, and since the MI models with less parameters showed no overall improvement, we decided to use the same parameters to generate all models. For both the Complete Case and IPW model we can observe a change in the slope for higher values of workout intensity. This leads us to conclude that the interaction term is significant for this models as shown by their respective p-values.
+
+
+In the following three plots in Fig. \@ref(fig:DiscInteraction) we can see that the behaviour of the interaction factor vs. calories is somewhat simillar for the CC model and the two models created under MI. These three graphs are relevant to see how the two different methods chose in MI generate the new values. We can see in the graph for the PMM method that the line deviates more from the original data than in the Bayesian NORM graph. So, the PMM method of generating new values actually appears to be bringing our model away from the original data.
+
+
 Finally, IPW assigns weights to each available observation. In our case, all calories values corresponding to workout intensity 13 are missing. Hence, the method cannot assign a weight to values that do not exist. So, the only difference between the CC and IPW model is based on value generated for the workout intensity 19 (the only other entry with a missing value). This supports all our previous graphs coefficient values for both models that are always simmilar.
 
 # Conclusion
 
 Based on our discussion, and since the IPW model presented a lower AIC value than the CC model, we chose as a final model the IPW one.
 
+```{r echo=FALSE,fig.align='center'}
+intercept=summary(muscledata.results.ipw)$coefficients[1,1]
+wei=summary(muscledata.results.ipw)$coefficients[2,1]
+calh=summary(muscledata.results.ipw)$coefficients[3,1]
+interact=summary(muscledata.results.ipw)$coefficients[4,1]
+
+```
+
 $$
-calories_i = -351.223 + 8.0343*weight_i + 12.205*calhour_i - 0.1382*(weight_i*calhour_i) + \epsilon_i
+calories_i = $`r intercept`$  + $`r wei`$*weight_i + $`r calh`$*calhour_i - $`r interact`$*(weight_i*calhour_i) + \epsilon_i
 $$
 
 Analysing the model we conclude that both weight and workout intensity have a positive impact in the heat production for the individual. On the other hand, the interaction term has a slight negative impact in the heat production that is shown in previous graphs when we start to arrive at a plateau for higher values of workout intensity for variable weights. Also of importance is the intercept value $-351.223$ that has no physical significance as heat production is a strictly positive value.
 
-```{r echo=FALSE}
+```{r echo=FALSE,fig.align='center'}
 confint(muscledata.results.ipw)
 ```
 
-Looking at the confidence intervals, we can affirm with a 95% confidence that our values will fall inside the presented intervals. Hence, weight and workout intensity will be positive and the interaction factor negative. This is a good parameter to estimate how the population falls under our model and not just a certain individual.
+Looking at the confidence intervals, we affirm with a 95% confidence that our values will fall inside the presented intervals. Hence, weight and workout intensity will be positive and the interaction factor negative. This is a good parameter to estimate how the population falls under our model.
 
 # References
 
