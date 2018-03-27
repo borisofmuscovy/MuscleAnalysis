@@ -259,7 +259,7 @@ interact=summary(muscledata.results.ipw)$coefficients[4,1]
 ```
 
 $$
-calories_i = $`r intercept`$  + $`r wei`$*weight_i + $`r calh`$*calhour_i - $`r interact`$*(weight_i*calhour_i) + \epsilon_i
+calories_i = `r intercept`  + `r wei` \times weight_i + `r calh` \times calhour_i - `r interact` \times (weight_i \times calhour_i) + \epsilon_i
 $$
 
 Analysing the model we conclude that both weight and workout intensity have a positive impact in the heat production for the individual. On the other hand, the interaction term has a slight negative impact in the heat production that is shown in previous graphs when we start to arrive at a plateau for higher values of workout intensity for variable weights. Also of importance is the intercept value $-351.223$ that has no physical significance as heat production is a strictly positive value.
